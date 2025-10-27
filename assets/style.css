@@ -229,3 +229,51 @@ body {
 /* Scrollbars */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-thumb { background: #1e90ff88; border-radius: 4px; }
+
+/* ==========================================================
+   🔔 Bandeau de mise à jour
+   ========================================================== */
+.update-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: linear-gradient(90deg, #007bff, #1e90ff);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-weight: 600;
+  z-index: 9999;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  transform: translateY(-100%);
+  transition: transform 0.5s ease;
+}
+
+.update-banner.show {
+  transform: translateY(0);
+}
+
+.update-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.update-banner button {
+  background: #fff;
+  color: #007bff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.update-banner button:hover {
+  background: #e6e6e6;
+}
+.hidden {
+  display: none;
+}

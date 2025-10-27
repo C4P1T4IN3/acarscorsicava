@@ -410,3 +410,45 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// =============================
+// 🔔 GESTION MISE À JOUR VISUELLE
+// =============================
+const banner = document.getElementById("update-banner");
+const updateBtn = document.getElementById("update-now-btn");
+
+if (window.electronAPI) {
+  window.electronAPI.onBridgeData((data) => {
+    if (data.type === "update-available") {
+      console.log(`🚀 Nouvelle version ${data.version} détectée`);
+      banner.classList.remove("hidden");
+      setTimeout(() => banner.classList.add("show"), 200);
+    }
+
+    if (data.type === "update-downloaded") {
+      Swal.fire({
+        title: "Mise à jour prête",
+        text: "Redémarrer maintenant pour installer la mise à jour ?",
+        icon: "success",
+        showCancelButton: true,
+        confirmButtonText: "Redémarrer",
+      }).then((r) => {
+        if (r.isConfirmed) window.electronAPI.installUpdate();
+      });
+    }
+  });
+
+  if (updateBtn) {
+    updateBtn.addEventListener("click", () => {
+      Swal.fire({
+        title: "Téléchargement en cours...",
+        text: "Veuillez patienter pendant la mise à jour.",
+        icon: "info",
+        showConfirmButton: false,
+        allowOutsideClick: false,
+      });
+      window.electronAPI.downloadUpdate();
+    });
+  }
+}
+
