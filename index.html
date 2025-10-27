@@ -4,19 +4,20 @@
   <meta charset="UTF-8" />
   <title>ACARS Air Corsica Virtuel</title>
 
-  <!-- Icône et style -->
+  <!-- Icône + styles -->
   <link rel="icon" href="assets/logo.ico" />
   <link rel="stylesheet" href="assets/style.css" />
 
-  <!-- Leaflet (sans integrity pour éviter les blocages CSP) -->
+  <!-- Leaflet (sans integrity pour éviter blocages) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body>
   <div id="app">
-    <!-- ================= Sidebar ================= -->
+    <!-- ============== Sidebar ============== -->
     <aside class="sidebar">
       <div class="sidebar-header">
+        <!-- Place bien assets/logo.png -->
         <img src="assets/logo.png" alt="Logo Air Corsica" class="logo" />
         <h2>ACARS</h2>
         <p class="version">v1.0.9</p>
@@ -34,9 +35,8 @@
       </div>
     </aside>
 
-    <!-- ================= Contenu principal ================= -->
+    <!-- ============== Contenu principal ============== -->
     <main class="main-content">
-      <!-- En-tête -->
       <header class="topbar">
         <div class="pilot-info">
           <span id="pilotName">--</span>
@@ -44,12 +44,12 @@
         </div>
       </header>
 
-      <!-- ================= SECTION : Tableau de bord ================= -->
+      <!-- ======= SECTION : Tableau de bord ======= -->
       <section id="dashboard" class="section active">
         <div class="map-container">
           <div id="map"></div>
 
-          <!-- Overlay d'informations -->
+          <!-- Overlay stats -->
           <div class="flight-overlay">
             <h3>✈️ Suivi du vol</h3>
             <p><strong>Durée :</strong> <span id="stat-duration">0:00</span></p>
@@ -60,15 +60,23 @@
             <p><strong>Phase :</strong> <span id="stat-phase">Aucune</span></p>
           </div>
 
-          <!-- Logs en bas à droite -->
+          <!-- Overlay logs -->
           <div class="log-overlay">
             <h3>Logs du vol</h3>
             <div id="flightLog"></div>
           </div>
+
+          <!-- HUD dynamique -->
+          <div id="hud">
+            <div>🧭 Cap : <span id="hud-heading">000°</span></div>
+            <div>💨 Vitesse : <span id="hud-speed">0 kts</span></div>
+            <div>🏔️ Altitude : <span id="hud-alt">0 ft</span></div>
+            <div>✈️ Phase : <span id="hud-phase">Parked</span></div>
+          </div>
         </div>
       </section>
 
-      <!-- ================= SECTION : Vols assignés ================= -->
+      <!-- ======= SECTION : Vols assignés ======= -->
       <section id="flights" class="section">
         <h2>Vols assignés</h2>
         <div id="flightsList" class="card">
@@ -76,7 +84,7 @@
         </div>
       </section>
 
-      <!-- ================= SECTION : Chat pilote ================= -->
+      <!-- ======= SECTION : Chat ======= -->
       <section id="chat" class="section">
         <h2>Chat pilote</h2>
         <div class="chat-container">
@@ -88,7 +96,7 @@
         </div>
       </section>
 
-      <!-- ================= SECTION : Paramètres ================= -->
+      <!-- ======= SECTION : Paramètres ======= -->
       <section id="settings" class="section">
         <h2>Paramètres</h2>
         <p>Clé API : <span id="apiKeyDisplay">Non définie</span></p>
@@ -96,7 +104,7 @@
     </main>
   </div>
 
-  <!-- ================= Librairies JS ================= -->
+  <!-- Libs -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
