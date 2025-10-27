@@ -2,7 +2,12 @@
 // ACARS Air Corsica Virtuel - Logique principale
 // ==============================================
 
+import Swal from 'sweetalert2';
+import axios from 'axios';
+
+// =====================
 // Base API
+// =====================
 const API_BASE = "https://crew.aircorsica-virtuel.fr/api_proxy.php?endpoint";
 
 // =====================
@@ -31,15 +36,6 @@ let currentFlight = null;
 let dragging = false;
 let offset = { x: 0, y: 0 };
 
-const { ipcRenderer } = require('electron');
-import Swal from 'sweetalert2';
-
-// Lien renderer → main pour l'updater
-window.electronAPI = {
-  downloadUpdate: () => ipcRenderer.invoke('download-update'),
-  installUpdate: () => ipcRenderer.invoke('install-update')
-};
-
 // =====================
 // Authentification API
 // =====================
@@ -57,14 +53,25 @@ async function verifyApiKey(key) {
       showApp();
       startBridgeConnection();
       startChatPolling();
+
+      Swal.fire({
+        title: 'Connexion réussie',
+        text: `Bienvenue, ${user.name || 'Pilote'} !`,
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
+
       return true;
     } else {
       loginMsg.textContent = "❌ Clé API invalide.";
+      Swal.fire('Erreur', 'Clé API invalide.', 'error');
       return false;
     }
   } catch (err) {
     loginMsg.textContent = "⚠️ Erreur API.";
     console.error("Erreur API:", err);
+    Swal.fire('Erreur', 'Impossible de contacter le serveur API.', 'warning');
     return false;
   }
 }
@@ -78,7 +85,7 @@ function showApp() {
 }
 
 // =====================
-// Connexion bouton login
+// Connexion
 // =====================
 loginBtn.addEventListener("click", async () => {
   const key = apiKeyInput.value.trim();
@@ -95,7 +102,10 @@ loginBtn.addEventListener("click", async () => {
 // =====================
 logoutBtn.addEventListener("click", () => {
   localStorage.removeItem("apiKey");
-  location.reload();
+  window.electronAPI.logout();
+  Swal.fire('Déconnexion', 'Vous avez été déconnecté.', 'info').then(() => {
+    location.reload();
+  });
 });
 
 // =====================
@@ -193,7 +203,7 @@ async function startBridgeConnection() {
   try {
     const bridgeSocket = new WebSocket("ws://127.0.0.1:32123");
     bridgeSocket.onopen = () => console.log("🟢 Connecté au bridge SimConnect/XPlane");
-    bridgeSocket.onmessage = async (event) => {
+    bridgeSocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       updateFlightData(data);
     };
@@ -226,8 +236,11 @@ sendPirepBtn.addEventListener("click", async () => {
     await axios.post(url, { flight: currentFlight || {}, user: currentUser });
     pirepStatus.textContent = "✅ PIREP envoyé avec succès !";
     sendPirepBtn.classList.add("hidden");
+
+    Swal.fire('Succès', 'PIREP envoyé avec succès !', 'success');
   } catch (e) {
     pirepStatus.textContent = "❌ Erreur lors de l'envoi du PIREP.";
+    Swal.fire('Erreur', "Impossible d'envoyer le PIREP.", 'error');
   }
 });
 
