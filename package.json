@@ -1,0 +1,54 @@
+{
+  "name": "acars-aircorsica",
+  "version": "1.0.0",
+  "description": "ACARS Air Corsica Virtuel pour MSFS / X-Plane",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "author": "Air Corsica Virtuel",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "electron-store": "^9.0.0",
+    "electron-updater": "^6.3.4",
+    "sweetalert2": "^11.10.0"
+  },
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.aircorsica.acars",
+    "productName": "ACARS Air Corsica Virtuel",
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
+	  "repository": {
+    "type": "git",
+    "url": "https://github.com/C4P1T4IN3/acarscorsicava.git"
+  },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "C4PIT4IN3",
+        "repo": "acarscorsicava"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/logo.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ACARS Air Corsica"
+    }
+  }
+}
