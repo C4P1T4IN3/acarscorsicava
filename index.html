@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <title>ACARS Air Corsica Virtuel</title>
+
+  <!-- Icône et style -->
   <link rel="icon" href="assets/logo.ico" />
   <link rel="stylesheet" href="assets/style.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet (sans integrity pour éviter les blocages CSP) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body>
@@ -33,6 +36,7 @@
 
     <!-- Contenu principal -->
     <main class="main-content">
+      <!-- En-tête -->
       <header class="topbar">
         <div class="pilot-info">
           <span id="pilotName">--</span>
@@ -40,45 +44,44 @@
         </div>
       </header>
 
-      <!-- Tableau de bord -->
+      <!-- SECTION : Tableau de bord -->
       <section id="dashboard" class="section active">
-        <h2>Tableau de bord</h2>
-
-        <div class="grid-2">
-          <div class="card stats">
-            <h3>Statistiques du vol</h3>
-            <ul class="stats-list">
-              <li><strong>⏱️ Durée :</strong> <span id="stat-duration">0:00</span></li>
-              <li><strong>📍 Distance :</strong> <span id="stat-distance">0 nm</span></li>
-              <li><strong>💨 Vitesse max :</strong> <span id="stat-maxspeed">0 kts</span></li>
-              <li><strong>🏔️ Altitude max :</strong> <span id="stat-maxalt">0 ft</span></li>
-              <li><strong>⛽ Carburant :</strong> <span id="stat-fuel">--</span></li>
-              <li><strong>✈️ Phase :</strong> <span id="stat-phase">Aucune</span></li>
-            </ul>
-          </div>
-
-          <div class="card map-card">
-            <h3>Carte de vol en direct</h3>
+        <div class="dashboard-layout">
+          <!-- Carte principale -->
+          <div class="map-wrapper">
             <div id="map" class="map"></div>
           </div>
-        </div>
 
-        <div class="grid-2">
-          <div class="card">
-            <h3>Statut du vol</h3>
-            <pre id="flightData">En attente du simulateur...</pre>
-            <p id="pirepStatus"></p>
-            <button id="sendPirepBtn" class="btn hidden">✈️ Envoyer le PIREP</button>
-          </div>
+          <!-- Panneaux latéraux -->
+          <div class="side-panels">
+            <div class="card stats">
+              <h3>Statistiques du vol</h3>
+              <ul class="stats-list">
+                <li><strong>⏱️ Durée :</strong> <span id="stat-duration">0:00</span></li>
+                <li><strong>📍 Distance :</strong> <span id="stat-distance">0 nm</span></li>
+                <li><strong>💨 Vitesse max :</strong> <span id="stat-maxspeed">0 kts</span></li>
+                <li><strong>🏔️ Altitude max :</strong> <span id="stat-maxalt">0 ft</span></li>
+                <li><strong>⛽ Carburant :</strong> <span id="stat-fuel">--</span></li>
+                <li><strong>✈️ Phase :</strong> <span id="stat-phase">Aucune</span></li>
+              </ul>
+            </div>
 
-          <div class="card">
-            <h3>Logs du vol</h3>
-            <div id="flightLog" class="log-container"></div>
+            <div class="card logs">
+              <h3>Logs du vol</h3>
+              <div id="flightLog" class="log-container"></div>
+            </div>
+
+            <div class="card status">
+              <h3>Statut du vol</h3>
+              <pre id="flightData">En attente du simulateur...</pre>
+              <p id="pirepStatus"></p>
+              <button id="sendPirepBtn" class="btn hidden">✈️ Envoyer le PIREP</button>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- Vols assignés -->
+      <!-- SECTION : Vols assignés -->
       <section id="flights" class="section">
         <h2>Vols assignés</h2>
         <div id="flightsList" class="card">
@@ -86,7 +89,7 @@
         </div>
       </section>
 
-      <!-- Chat pilote -->
+      <!-- SECTION : Chat pilote -->
       <section id="chat" class="section">
         <h2>Chat pilote</h2>
         <div class="chat-container">
@@ -98,7 +101,7 @@
         </div>
       </section>
 
-      <!-- Paramètres -->
+      <!-- SECTION : Paramètres -->
       <section id="settings" class="section">
         <h2>Paramètres</h2>
         <p>Clé API : <span id="apiKeyDisplay">Non définie</span></p>
@@ -106,14 +109,13 @@
     </main>
   </div>
 
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-SmSRNkpqhtpJUZ+rbFybAi1uhb4onV0qgkNQe3pPzZU="
-    crossorigin=""
-  ></script>
+  <!-- 📦 Librairies JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script src="./node_modules/axios/dist/axios.min.js"></script>
-<script src="./node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
-<script src="renderer.js"></script>
+  <!-- Script principal -->
+  <script src="renderer.js"></script>
 </body>
 </html>
