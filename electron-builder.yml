@@ -1,6 +1,43 @@
 appId: com.aircorsica.acars
+productName: ACARS Air Corsica Virtuel
+copyright: © 2025 Air Corsica Virtuel
+
+directories:
+  buildResources: assets
+  output: dist
+
+files:
+  - main.js
+  - preload.js
+  - renderer.js
+  - index.html
+  - assets/**
+  - modules/**
+  - package.json
+
+publish:
+  provider: github
+  owner: C4P1T4IN3
+  repo: acarscorsicava
+
 asarUnpack:
   - node_modules/electron-updater
   - node_modules/electron-store
+
 extraMetadata:
   type: commonjs
+
+win:
+  target: nsis
+  icon: assets/logo.ico
+  publisherName: "Air Corsica Virtuel"
+  signingHashAlgorithms: ["sha256"]
+  requestedExecutionLevel: asInvoker
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "ACARS Air Corsica"
+  artifactName: "ACARS_AirCorsica_${version}_Setup.${ext}"

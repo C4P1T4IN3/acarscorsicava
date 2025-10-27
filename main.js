@@ -1,20 +1,21 @@
+// =============================
+// ACARS Air Corsica Virtuel
+// main.js (CommonJS complet et stable)
+// =============================
+
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const Store = require('electron-store'); // ✅ Import normal (CommonJS)
-const { autoUpdater } = require('electron-updater'); // ✅ Import normal
+const Store = require('electron-store'); // ✅ CommonJS
+const { autoUpdater } = require('electron-updater'); // ✅ CommonJS
 const auth = require('./modules/auth.js');
-const bridge = require('./modules/bridge.js');
+const bridge = require('./modules/bridge.js'); // ✅ Bridge externe
 
+// =============================
+// Variables globales
+// =============================
 let mainWindow = null;
-let store = new Store(); // ✅ Instance unique de store
-(async () => {
-  const mod = await import('electron-store');
-  Store = mod.default;
-  store = new Store();
-})();
-
-let mainWindow = null;
+const store = new Store(); // ✅ Instance unique de stockage local
 
 // =============================
 // Création de la fenêtre principale
@@ -53,7 +54,7 @@ function createWindow() {
 }
 
 // =============================
-// Mises à jour automatiques
+// Mises à jour automatiques (GitHub Releases)
 // =============================
 function checkForUpdates() {
   try {
@@ -106,6 +107,7 @@ function checkForUpdates() {
   }
 }
 
+// IPC pour le téléchargement et installation de la MAJ
 ipcMain.handle('download-update', () => autoUpdater.downloadUpdate());
 ipcMain.handle('install-update', () => autoUpdater.quitAndInstall());
 
@@ -133,6 +135,16 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
+// =============================
+// Fermeture propre
+// =============================
 app.on('before-quit', () => {
-  bridge.stopBridge();
+  try {
+    bridge.stopBridge();
+  } catch (err) {
+    console.warn('⚠️ Erreur à la fermeture du bridge :', err.message);
+  }
+  app.exit(0); // ✅ Force la fermeture totale pour éviter le bug "ACARS ne peut pas être fermé"
 });
+
+console.log('🚀 ACARS Air Corsica Virtuel démarré');
