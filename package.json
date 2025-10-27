@@ -76,7 +76,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "ACARS Air Corsica",
-      "artifactName": "ACARS_AirCorsica_${version}_Setup.${ext}"
+      "artifactName": "ACARS_AirCorsica_${version}_Setup.${ext}",
 	  "deleteAppDataOnUninstall": true
     }
   }
