@@ -2,81 +2,110 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
   <title>ACARS Air Corsica Virtuel</title>
   <link rel="stylesheet" href="assets/style.css">
+  <link rel="icon" href="assets/logo.ico">
 </head>
 <body>
-  <!-- Login Screen -->
-  <div id="loginScreen" class="screen active">
-    <div class="login-card">
-      <img src="https://www.aircorsica.com/themes/custom/bl_main/img/logo.svg" class="logo" alt="Air Corsica">
-      <h2>Connexion ACARS</h2>
-      <input type="text" id="apiKeyInput" placeholder="Clé API phpVMS">
-      <button id="loginBtn">Se connecter</button>
-      <p id="loginMsg"></p>
-    </div>
-  </div>
 
-  <!-- Main Dashboard -->
-  <div id="mainApp" class="screen">
+  <div id="app">
+
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-      <div class="menu-item" data-section="dashboard" title="Dashboard">
-        🏠 <span class="menu-text">Dashboard</span>
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="assets/logo.png" alt="Logo Air Corsica" class="logo">
+        <h2>ACARS</h2>
+        <p class="version">v1.0.9</p>
       </div>
-      <div class="menu-item" data-section="flight" title="Vol">
-        ✈️ <span class="menu-text">Vol</span>
-      </div>
-      <div class="menu-item" data-section="pirep" title="PIREP">
-        📄 <span class="menu-text">PIREP</span>
-      </div>
-      <div class="menu-item" data-section="chat" title="Chat">
-        💬 <span class="menu-text">Chat</span>
-      </div>
-      <div class="menu-item" id="logoutBtn" title="Déconnexion">
-        🚪 <span class="menu-text">Quitter</span>
-      </div>
-    </div>
 
-    <!-- Content -->
-    <div class="content">
-      <section id="dashboard" class="section active">
-        <h1>Bienvenue sur ACARS Air Corsica Virtuel</h1>
-        <p>Connecté en tant que <span id="pilotName">...</span></p>
-      </section>
+      <nav class="menu">
+        <button data-section="dashboard" class="menu-item active">Tableau de bord</button>
+        <button data-section="flights" class="menu-item">Vols assignés</button>
+        <button data-section="chat" class="menu-item">Chat pilote</button>
+        <button data-section="settings" class="menu-item">Paramètres</button>
+        <button id="logoutBtn" class="logout">Déconnexion</button>
+      </nav>
+    </aside>
 
-      <section id="flight" class="section">
-        <h2>Suivi du vol</h2>
-        <pre id="flightData">Latitude: 0.0000
-Longitude: 0.0000
-Altitude: 0 ft
-Vitesse: 0 kts</pre>
-      </section>
+    <!-- Contenu principal -->
+    <main class="main-content">
+      <header class="topbar">
+        <span id="pilotName">--</span>
+        <span id="status" class="status online">🟢 Connecté</span>
+      </header>
 
-      <section id="pirep" class="section">
-        <h2>Rapport de vol (PIREP)</h2>
-        <p id="pirepStatus">En attente d'atterrissage...</p>
-        <button id="sendPirepBtn" class="hidden">Envoyer PIREP</button>
-      </section>
-    </div>
+<section id="dashboard" class="section active">
+  <h2>Tableau de bord</h2>
+
+  <div class="stats-grid">
+    <div class="stat"><strong>⏱️ Durée:</strong> <span id="stat-duration">0:00</span></div>
+    <div class="stat"><strong>📍 Distance:</strong> <span id="stat-distance">0 nm</span></div>
+    <div class="stat"><strong>💨 Vitesse max:</strong> <span id="stat-maxspeed">0 kts</span></div>
+    <div class="stat"><strong>🏔️ Altitude max:</strong> <span id="stat-maxalt">0 ft</span></div>
+    <div class="stat"><strong>⛽ Carburant:</strong> <span id="stat-fuel">--</span></div>
+    <div class="stat"><strong>✈️ Phase:</strong> <span id="stat-phase">Aucune</span></div>
   </div>
 
-  <!-- Chat Popup -->
-  <div id="chatPopup" class="chat-popup hidden">
-    <div class="chat-header">
-      <span>💬 Chat Pilotes</span>
-      <button id="closeChatBtn">×</button>
-    </div>
-    <div class="chat-body" id="chatMessages"></div>
-    <div class="chat-input">
-      <input type="text" id="chatMessageInput" placeholder="Écrire un message...">
-      <button id="sendChatBtn">Envoyer</button>
-    </div>
+  <div class="card">
+    <h3>Carte de vol en direct</h3>
+    <div id="map" style="height:400px; border-radius:10px; margin-bottom:1rem;"></div>
   </div>
 
+  <div class="card">
+    <h3>Statut du vol</h3>
+    <pre id="flightData">En attente du simulateur...</pre>
+    <p id="pirepStatus"></p>
+    <button id="sendPirepBtn" class="btn hidden">✈️ Envoyer PIREP</button>
+  </div>
 
-  <script src="./renderer.js"></script>
+  <div class="card">
+    <h3>Logs du vol</h3>
+    <div id="flightLog" class="log-container"></div>
+  </div>
+</section>
+
+<!-- Leaflet CSS -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-sA+4rY2JWn4EWOw2tO7QlWv6Fp+zE67Dox9N5Q0X+3s="
+  crossorigin=""
+/>
+
+<!-- Leaflet JS -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-SmSRNkpqhtpJUZ+rbFybAi1uhb4onV0qgkNQe3pPzZU="
+  crossorigin=""
+></script>
+
+
+      <section id="flights" class="section">
+        <h2>Vols assignés</h2>
+        <div id="flightsList" class="card">
+          <p>Chargement des vols...</p>
+        </div>
+      </section>
+
+      <section id="chat" class="section">
+        <h2>Chat Pilote</h2>
+        <div class="chat-container">
+          <div id="chatMessages" class="chat-messages"></div>
+          <div class="chat-input">
+            <input id="chatMessageInput" type="text" placeholder="Votre message...">
+            <button id="sendChatBtn">Envoyer</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="settings" class="section">
+        <h2>Paramètres</h2>
+        <p>Clé API : <span id="apiKeyDisplay">Non définie</span></p>
+      </section>
+    </main>
+
+  </div>
+
+  <script src="renderer.js"></script>
 </body>
 </html>
