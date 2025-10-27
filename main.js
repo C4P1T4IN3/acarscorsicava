@@ -1,26 +1,23 @@
 // =============================
 // ACARS Air Corsica Virtuel
-// main.js (CommonJS complet et stable)
+// main.js — version stable (Electron + AutoUpdater)
 // =============================
 
-const { app, BrowserWindow, ipcMain } = require('electron');
-const path = require('path');
-const fs = require('fs');
-const Store = require('electron-store');
-const auth = require('./modules/auth.js');
-const bridge = require('./modules/bridge.js');
+const { app, BrowserWindow, ipcMain } = require("electron");
+const path = require("path");
+const Store = require("electron-store");
+const bridge = require("./modules/bridge.js");
+const auth = require("./modules/auth.js");
 
 // =============================
-// Chargement sécurisé de electron-updater
+// Chargement sécurisé du module electron-updater
 // =============================
 let autoUpdater;
 try {
-  // Mode CommonJS classique
-  autoUpdater = require('electron-updater').autoUpdater;
+  autoUpdater = require("electron-updater").autoUpdater;
 } catch (err) {
-  // Fallback pour builds ESM
-  const pkg = require('electron-updater');
-  autoUpdater = pkg.autoUpdater || pkg.default.autoUpdater;
+  const updater = require("electron-updater");
+  autoUpdater = updater.autoUpdater || updater.default.autoUpdater;
 }
 
 // =============================
@@ -34,35 +31,36 @@ const store = new Store();
 // =============================
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 960,
-    height: 720,
-    minWidth: 900,
-    minHeight: 600,
-    icon: path.join(__dirname, 'assets', 'logo.ico'),
-    backgroundColor: '#111217',
+    width: 1280,
+    height: 800,
+    minWidth: 1000,
+    minHeight: 650,
+    icon: path.join(__dirname, "assets", "logo.ico"),
+    backgroundColor: "#111217",
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: false,
     },
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  mainWindow.loadFile(path.join(__dirname, "index.html"));
+  // mainWindow.webContents.openDevTools(); // 🔧 debug uniquement
 
-  mainWindow.on('closed', () => {
+  mainWindow.on("closed", () => {
     mainWindow = null;
   });
 
-  // ✅ Lancer le bridge simulateur
+  // ✅ Démarrer le bridge simulateur (si disponible)
   try {
     bridge.startBridge(__dirname, (data) => {
       if (mainWindow && mainWindow.webContents) {
-        mainWindow.webContents.send('bridge-data', data);
+        mainWindow.webContents.send("bridge-data", data);
       }
     });
   } catch (e) {
-    console.warn('⚠️ Impossible de démarrer le bridge :', e.message);
+    console.warn("⚠️ Impossible de démarrer le bridge:", e.message);
   }
 
   // ✅ Vérifier les mises à jour après 5 secondes
@@ -70,101 +68,108 @@ function createWindow() {
 }
 
 // =============================
-// Mises à jour automatiques (GitHub Releases)
+// 🔁 Vérification & gestion des mises à jour GitHub
 // =============================
 function checkForUpdates() {
   try {
     autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = true;
+    autoUpdater.allowPrerelease = false;
 
-    autoUpdater.on('update-available', () => {
-      console.log('🔔 Nouvelle mise à jour disponible');
-      if (mainWindow) {
-        mainWindow.webContents.executeJavaScript(`
-          Swal.fire({
-            title: 'Mise à jour disponible',
-            text: 'Une nouvelle version d’ACARS est disponible. Voulez-vous la télécharger maintenant ?',
-            icon: 'info',
-            showCancelButton: true,
-            confirmButtonText: 'Mettre à jour',
-            cancelButtonText: 'Plus tard'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              window.electronAPI.downloadUpdate();
-            }
-          });
-        `);
-      }
-    });
-
-    autoUpdater.on('update-downloaded', () => {
-      console.log('✅ Mise à jour téléchargée');
-      if (mainWindow) {
-        mainWindow.webContents.executeJavaScript(`
-          Swal.fire({
-            title: 'Mise à jour prête',
-            text: 'L’application va redémarrer pour terminer la mise à jour.',
-            icon: 'success'
-          }).then(() => {
-            window.electronAPI.installUpdate();
-          });
-        `);
-      }
-    });
-
-    autoUpdater.on('error', (err) => {
-      console.error('❌ Erreur AutoUpdater :', err);
-    });
-
-    console.log('🔎 Vérification des mises à jour GitHub...');
+    console.log("🔍 Vérification des mises à jour GitHub...");
     autoUpdater.checkForUpdates();
+
+    // 🔹 Quand une mise à jour est trouvée
+    autoUpdater.on("update-available", (info) => {
+      console.log(`📦 Nouvelle version ${info.version} trouvée`);
+      if (mainWindow) {
+        mainWindow.webContents.send("bridge-data", {
+          type: "update-available",
+          version: info.version,
+        });
+      }
+    });
+
+    // 🔹 Quand la mise à jour est téléchargée
+    autoUpdater.on("update-downloaded", () => {
+      console.log("✅ Mise à jour téléchargée, prête à installer");
+      if (mainWindow) {
+        mainWindow.webContents.send("bridge-data", {
+          type: "update-downloaded",
+        });
+      }
+    });
+
+    // 🔹 Erreur
+    autoUpdater.on("error", (err) => {
+      console.error("❌ Erreur AutoUpdater:", err.message);
+      if (mainWindow) {
+        mainWindow.webContents.send("bridge-data", {
+          type: "update-error",
+          message: err.message,
+        });
+      }
+    });
   } catch (error) {
-    console.error('Erreur pendant checkForUpdates:', error);
+    console.error("Erreur pendant checkForUpdates:", error);
   }
 }
 
 // =============================
-// IPC: Mises à jour et Authentification
+// ⚙️ IPC: mise à jour, auth & logout
 // =============================
-ipcMain.handle('download-update', () => autoUpdater.downloadUpdate());
-ipcMain.handle('install-update', () => autoUpdater.quitAndInstall());
+ipcMain.handle("download-update", async () => {
+  try {
+    await autoUpdater.downloadUpdate();
+  } catch (e) {
+    console.error("Erreur téléchargement MAJ:", e.message);
+  }
+});
 
-ipcMain.handle('get-stored-token', () => auth.getToken());
-ipcMain.on('save-token', (event, token) => auth.saveKey(token));
-ipcMain.on('logout', (event) => {
+ipcMain.handle("install-update", async () => {
+  try {
+    autoUpdater.quitAndInstall();
+  } catch (e) {
+    console.error("Erreur installation MAJ:", e.message);
+  }
+});
+
+// Authentification utilisateur locale
+ipcMain.handle("get-stored-token", () => auth.getToken());
+ipcMain.on("save-token", (event, token) => auth.saveKey(token));
+ipcMain.on("logout", (event) => {
   auth.clearKey();
-  event.reply('logged-out');
+  event.reply("logged-out");
 });
 
 // =============================
-// Gestion Electron
+// 🧩 Cycle de vie Electron
 // =============================
 app.whenReady().then(createWindow);
 
-app.on('window-all-closed', () => {
+app.on("window-all-closed", () => {
   try {
-    bridge.stopBridge();
+    if (bridge && typeof bridge.stopBridge === "function") bridge.stopBridge();
   } catch (e) {
-    console.warn('⚠️ Erreur fermeture bridge :', e.message);
+    console.warn("⚠️ Erreur à la fermeture du bridge:", e.message);
   }
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform !== "darwin") app.quit();
 });
 
-app.on('activate', () => {
+app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
 // =============================
-// Fermeture complète (NSIS-safe)
+// 🧹 Fermeture propre (support NSIS)
 // =============================
-app.on('before-quit', () => {
-  console.log('🛑 Fermeture complète d’ACARS...');
+app.on("before-quit", () => {
+  console.log("🛑 Fermeture d’ACARS...");
   try {
-    if (bridge && typeof bridge.stopBridge === 'function') {
+    if (bridge && typeof bridge.stopBridge === "function") {
       bridge.stopBridge();
     }
-    // ⚠️ On ne tue plus le process ici (NSIS le gère désormais)
   } catch (e) {
-    console.error('Erreur pendant la fermeture :', e.message);
+    console.error("Erreur pendant la fermeture:", e.message);
   }
 });

@@ -1,3 +1,7 @@
+/* ===========================================================
+   🎨 ACARS Air Corsica Virtuel — Interface moderne
+   =========================================================== */
+
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
@@ -8,26 +12,40 @@ body {
   overflow: hidden;
 }
 
-/* Sidebar */
+/* ===========================================================
+   Sidebar (menu de gauche)
+   =========================================================== */
 .sidebar {
-  width: 230px;
-  background: rgba(20, 25, 40, 0.95);
+  width: 240px;
+  background: rgba(20, 25, 40, 0.96);
   backdrop-filter: blur(12px);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem;
+  padding: 1.5rem 1rem;
 }
 
 .sidebar-header {
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 }
 
 .logo {
   width: 70px;
   border-radius: 10px;
+}
+
+.sidebar h2 {
+  margin: 0.6rem 0 0.2rem;
+  color: #1e90ff;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.version {
+  font-size: 0.8rem;
+  color: #888;
 }
 
 .menu {
@@ -48,6 +66,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.6rem;
+  font-size: 15px;
 }
 
 .menu-item:hover,
@@ -66,22 +85,28 @@ body {
   border-radius: 6px;
   cursor: pointer;
   transition: 0.3s;
+  font-weight: 600;
 }
 
 .logout:hover {
   background-color: #ff4d4d55;
 }
 
-/* Main */
+/* ===========================================================
+   Main content
+   =========================================================== */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   padding: 1rem 2rem;
-  overflow-y: auto;
+  overflow: hidden;
+  position: relative;
 }
 
-/* Topbar */
+/* ===========================================================
+   Topbar (barre supérieure)
+   =========================================================== */
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -90,6 +115,13 @@ body {
   padding: 0.8rem 1.5rem;
   border-radius: 10px;
   margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.topbar .pilot-info {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 .topbar span {
@@ -101,46 +133,102 @@ body {
   color: #00ff6a;
 }
 
-/* Section */
+/* ===========================================================
+   Sections
+   =========================================================== */
 .section {
   display: none;
+  height: 100%;
+  overflow: hidden;
 }
 .section.active {
   display: block;
 }
 
-/* Dashboard grid */
-.dashboard-grid {
+/* ===========================================================
+   Tableau de bord
+   =========================================================== */
+.dashboard-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: 1fr 320px;
   gap: 1rem;
+  height: calc(100% - 60px);
 }
 
+/* Carte principale */
+.map-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  z-index: 1;
+}
+
+/* Overlay infos sur la carte */
+.map-overlay {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(10, 14, 25, 0.85);
+  border-radius: 10px;
+  padding: 10px 15px;
+  color: #b5c6ff;
+  font-size: 13px;
+  line-height: 1.4;
+  border: 1px solid rgba(255,255,255,0.1);
+  z-index: 10;
+  width: 180px;
+}
+
+.map-overlay strong {
+  color: #1e90ff;
+  display: inline-block;
+  width: 90px;
+}
+
+/* Panneaux latéraux */
+.side-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+/* Cartes */
 .card {
   background: rgba(30, 35, 55, 0.65);
   border-radius: 10px;
   padding: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease;
 }
 
 .card h3 {
   color: #1e90ff;
   font-size: 16px;
   margin-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 5px;
 }
 
-.stats-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+.stats-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
-
-.stat {
+.stats-list li {
   font-size: 14px;
   color: #b5c6ff;
+  margin: 4px 0;
 }
-
-.stat strong {
+.stats-list strong {
   color: #1e90ff;
 }
 
@@ -156,7 +244,122 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-#map {
-  height: 350px;
+/* ===========================================================
+   Boutons
+   =========================================================== */
+.btn {
+  display: inline-block;
+  background-color: #1e90ff;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 600;
+}
+.btn:hover {
+  background-color: #007bff;
+}
+.btn.hidden {
+  display: none;
+}
+
+/* ===========================================================
+   Chat pilote
+   =========================================================== */
+.chat-container {
+  background: rgba(20,25,40,0.7);
   border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 75vh;
+  padding: 1rem;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 0.8rem;
+  border-radius: 10px;
+  background: rgba(10,15,25,0.5);
+}
+
+.chat.user, .chat.admin {
+  margin-bottom: 0.6rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.chat.user {
+  background: rgba(30, 144, 255, 0.15);
+}
+.chat.admin {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffdc73;
+}
+
+.chat-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.chat-input input {
+  flex: 1;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+}
+.chat-input button {
+  background: #1e90ff;
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+.chat-input button:hover {
+  background: #007bff;
+}
+
+/* ===========================================================
+   Scrollbars custom
+   =========================================================== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e90ff88;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #1e90ff;
+}
+
+/* ===========================================================
+   Animations
+   =========================================================== */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===========================================================
+   Map legend
+   =========================================================== */
+.map-legend {
+  color: #fff;
+  background: rgba(10,15,25,0.8);
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.1);
 }
