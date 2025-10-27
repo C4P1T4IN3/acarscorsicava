@@ -5,14 +5,24 @@
 
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const Store = require('electron-store');
 const fs = require('fs');
 const { autoUpdater } = require('electron-updater');
 const auth = require('./modules/auth.js');
 const bridge = require('./modules/bridge.js'); // ✅ Module bridge intégré
 
+// =============================
+// Import dynamique de electron-store (ESM compatible CommonJS)
+// =============================
+let Store;
+let store;
+
+(async () => {
+  const mod = await import('electron-store');
+  Store = mod.default;
+  store = new Store();
+})();
+
 let mainWindow = null;
-const store = new Store();
 
 // =============================
 // Création de la fenêtre principale

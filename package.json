@@ -5,70 +5,68 @@
   "main": "main.js",
   "author": "Air Corsica Virtuel",
   "license": "MIT",
-
   "scripts": {
     "start": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
-
   "dependencies": {
     "axios": "^1.6.8",
-    "electron-store": "^9.0.0",
+    "electron-store": "^8.1.0",
     "electron-updater": "^6.3.4",
-    "sweetalert2": "^11.10.0"
+    "sweetalert2": "^11.10.0",
+    "ws": "^8.18.3"
   },
-
   "devDependencies": {
     "electron": "^28.2.0",
     "electron-builder": "^24.13.3"
   },
-
   "repository": {
     "type": "git",
     "url": "https://github.com/C4P1T4IN3/acarscorsicava.git"
   },
-
-"build": {
-  "appId": "com.aircorsica.acars",
-  "productName": "ACARS Air Corsica Virtuel",
-  "copyright": "© 2025 Air Corsica Virtuel",
-  "directories": {
-    "buildResources": "assets",
-    "output": "dist"
-  },
-  "files": [
-    "main.js",
-    "preload.js",
-    "renderer.js",
-    "index.html",
-    "assets/**/*",
-    "modules/**/*",
-    "package.json"
-  ],
-  "publish": [
-    {
-      "provider": "github",
-      "owner": "C4P1T4IN3",
-      "repo": "acarscorsicava"
+  "build": {
+    "appId": "com.aircorsica.acars",
+    "productName": "ACARS Air Corsica Virtuel",
+    "copyright": "© 2025 Air Corsica Virtuel",
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "assets/**/*",
+      "modules/**/*",
+      "package.json"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "C4P1T4IN3",
+        "repo": "acarscorsicava"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/logo.ico",
+      "signingHashAlgorithms": [
+        "sha256"
+      ],
+      "certificateFile": "C:/certificat_acars.pfx",
+      "certificatePassword": "acars123",
+      "publisherName": "Air Corsica Virtuel",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ACARS Air Corsica",
+      "artifactName": "ACARS_AirCorsica_${version}_Setup.${ext}"
     }
-  ],
-  "win": {
-    "target": "nsis",
-    "icon": "assets/logo.ico",
-    "signingHashAlgorithms": ["sha256"],
-    "certificateFile": "C:/certificat_acars.pfx",
-    "certificatePassword": "acars123",
-    "publisherName": "Air Corsica Virtuel",
-    "requestedExecutionLevel": "asInvoker"
-  },
-  "nsis": {
-    "oneClick": false,
-    "allowToChangeInstallationDirectory": true,
-    "createDesktopShortcut": true,
-    "createStartMenuShortcut": true,
-    "shortcutName": "ACARS Air Corsica",
-    "artifactName": "ACARS_AirCorsica_${version}_Setup.${ext}"
   }
-}
 }

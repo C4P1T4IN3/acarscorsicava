@@ -3,11 +3,10 @@
 // ==============================================
 
 // =====================
-// Imports
+// Imports (front-end only)
 // =====================
-const { ipcRenderer } = require('electron');
-const Swal = require('sweetalert2');
-const axios = require('axios');
+import Swal from "sweetalert2";
+import axios from "axios";
 
 // =====================
 // Base API
@@ -59,23 +58,23 @@ async function verifyApiKey(key) {
       startChatPolling();
 
       Swal.fire({
-        title: 'Connexion réussie',
-        text: `Bienvenue, ${user.name || 'Pilote'} !`,
-        icon: 'success',
+        title: "Connexion réussie",
+        text: `Bienvenue, ${user.name || "Pilote"} !`,
+        icon: "success",
         timer: 2000,
-        showConfirmButton: false
+        showConfirmButton: false,
       });
 
       return true;
     } else {
       loginMsg.textContent = "❌ Clé API invalide.";
-      Swal.fire('Erreur', 'Clé API invalide.', 'error');
+      Swal.fire("Erreur", "Clé API invalide.", "error");
       return false;
     }
   } catch (err) {
     loginMsg.textContent = "⚠️ Erreur API.";
     console.error("Erreur API:", err);
-    Swal.fire('Erreur', 'Impossible de contacter le serveur API.', 'warning');
+    Swal.fire("Erreur", "Impossible de contacter le serveur API.", "warning");
     return false;
   }
 }
@@ -107,7 +106,7 @@ loginBtn.addEventListener("click", async () => {
 logoutBtn.addEventListener("click", () => {
   localStorage.removeItem("apiKey");
   window.electronAPI.logout();
-  Swal.fire('Déconnexion', 'Vous avez été déconnecté.', 'info').then(() => {
+  Swal.fire("Déconnexion", "Vous avez été déconnecté.", "info").then(() => {
     location.reload();
   });
 });
@@ -115,12 +114,12 @@ logoutBtn.addEventListener("click", () => {
 // =====================
 // Navigation sidebar
 // =====================
-sidebarItems.forEach(item => {
+sidebarItems.forEach((item) => {
   item.addEventListener("click", () => {
     const section = item.getAttribute("data-section");
     if (!section) return;
 
-    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    document.querySelectorAll(".section").forEach((s) => s.classList.remove("active"));
     document.getElementById(section).classList.add("active");
 
     if (section === "chat") {
@@ -183,7 +182,7 @@ async function loadChatMessages() {
     const url = `${API_BASE}=chat/list&api_key=${apiKey}`;
     const res = await axios.get(url);
     chatMessages.innerHTML = "";
-    (res.data.messages || []).forEach(m => {
+    (res.data.messages || []).forEach((m) => {
       const p = document.createElement("p");
       if (m.is_admin) p.classList.add("admin");
       p.textContent = `${m.user}: ${m.text}`;
@@ -211,7 +210,8 @@ function startBridgeConnection() {
       const data = JSON.parse(event.data);
       updateFlightData(data);
     };
-    bridgeSocket.onerror = () => console.warn("⚠️ Impossible de se connecter au bridge local (sim non détecté)");
+    bridgeSocket.onerror = () =>
+      console.warn("⚠️ Impossible de se connecter au bridge local (sim non détecté)");
   } catch (e) {
     console.error("Erreur bridge:", e.message);
   }
@@ -219,11 +219,11 @@ function startBridgeConnection() {
 
 function updateFlightData(d) {
   const text = `
-Latitude: ${d.latitude.toFixed(4)}
-Longitude: ${d.longitude.toFixed(4)}
-Altitude: ${d.altitude.toFixed(0)} ft
-Vitesse: ${d.airspeed.toFixed(0)} kts
-Phase: ${d.phase}
+Latitude: ${d.latitude?.toFixed(4) ?? 0}
+Longitude: ${d.longitude?.toFixed(4) ?? 0}
+Altitude: ${d.altitude?.toFixed(0) ?? 0} ft
+Vitesse: ${d.airspeed?.toFixed(0) ?? 0} kts
+Phase: ${d.phase ?? "N/A"}
   `;
   flightData.textContent = text;
 
@@ -243,19 +243,21 @@ sendPirepBtn.addEventListener("click", async () => {
     pirepStatus.textContent = "✅ PIREP envoyé avec succès !";
     sendPirepBtn.classList.add("hidden");
 
-    Swal.fire('Succès', 'PIREP envoyé avec succès !', 'success');
+    Swal.fire("Succès", "PIREP envoyé avec succès !", "success");
   } catch (e) {
     pirepStatus.textContent = "❌ Erreur lors de l'envoi du PIREP.";
-    Swal.fire('Erreur', "Impossible d'envoyer le PIREP.", 'error');
+    Swal.fire("Erreur", "Impossible d'envoyer le PIREP.", "error");
   }
 });
 
 // =====================
 // Réception bridge depuis main.js
 // =====================
-ipcRenderer.on('bridge-data', (event, data) => {
-  updateFlightData(data);
-});
+if (window.electronAPI) {
+  window.electronAPI.onBridgeData?.((data) => {
+    updateFlightData(data);
+  });
+}
 
 // =====================
 // Auto login si clé stockée

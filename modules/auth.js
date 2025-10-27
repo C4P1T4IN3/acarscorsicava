@@ -34,5 +34,4 @@ function clearKey() {
   console.log('🧹 Clé API supprimée');
 }
 
-// Exporte les fonctions pour main.js
 module.exports = { saveKey, getToken, clearKey };
