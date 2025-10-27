@@ -1,6 +1,6 @@
 {
   "name": "acars-aircorsica",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "ACARS Air Corsica Virtuel pour MSFS / X-Plane",
   "main": "main.js",
   "author": "Air Corsica Virtuel",
@@ -62,22 +62,25 @@
       }
     ],
 
-    "win": {
-      "target": "nsis",
-      "icon": "assets/logo.ico",
-      "publisherName": "Air Corsica Virtuel",
-      "signingHashAlgorithms": ["sha256"],
-      "requestedExecutionLevel": "asInvoker"
-    },
-
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "ACARS Air Corsica",
-      "artifactName": "ACARS_AirCorsica_${version}_Setup.${ext}",
-	  "deleteAppDataOnUninstall": true
+"win": {
+  "target": [
+    {
+      "target": "nsis-web",
+      "arch": ["x64"]
     }
+  ],
+  "icon": "assets/logo.ico",
+  "publisherName": "Air Corsica Virtuel",
+  "signingHashAlgorithms": ["sha256"],
+  "requestedExecutionLevel": "asInvoker"
+},
+"nsisWeb": {
+  "artifactName": "ACARS_AirCorsica_${version}_WebSetup.${ext}",
+  "oneClick": false,
+  "createDesktopShortcut": true,
+  "createStartMenuShortcut": true,
+  "shortcutName": "ACARS Air Corsica",
+  "allowToChangeInstallationDirectory": true
+}
   }
 }
