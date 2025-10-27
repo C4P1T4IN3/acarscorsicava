@@ -1,24 +1,17 @@
 // =============================
 // ACARS Air Corsica Virtuel
-// main.js (ESM)
+// main.js (CommonJS complet)
 // =============================
 
-import { app, BrowserWindow, ipcMain } from 'electron';
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import Store from 'electron-store';
-import { spawn } from 'child_process';
-import fs from 'fs';
-import pkg from 'electron-updater';
-const { autoUpdater } = pkg;
-import * as auth from './modules/auth.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const Store = require('electron-store');
+const fs = require('fs');
+const { autoUpdater } = require('electron-updater');
+const auth = require('./modules/auth.js');
+const bridge = require('./modules/bridge.js'); // ✅ Module bridge intégré
 
 let mainWindow = null;
-let bridgeProcess = null;
-let watchdogInterval = null;
 const store = new Store();
 
 // =============================
@@ -32,12 +25,12 @@ function createWindow() {
     minHeight: 600,
     icon: path.join(__dirname, 'assets', 'logo.ico'),
     backgroundColor: '#111217',
-webPreferences: {
-  preload: path.join(__dirname, 'preload.js'),
-  contextIsolation: true,
-  nodeIntegration: false,
-  sandbox: false
-},
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false,
+    },
   });
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'));
@@ -46,83 +39,40 @@ webPreferences: {
     mainWindow = null;
   });
 
-  // Lancer le bridge et surveiller
-  startSimBridge();
-  startWatchdog();
+  // ✅ Lancer le bridge simulateur
+  bridge.startBridge(__dirname, (data) => {
+    if (mainWindow && mainWindow.webContents) {
+      mainWindow.webContents.send('bridge-data', data);
+    }
+  });
 
-  // Lancer la vérification de mise à jour
-  setTimeout(() => checkForUpdates(), 5000);
+  // ✅ Vérifier les mises à jour après 5 secondes
+  setTimeout(checkForUpdates, 5000);
 }
 
 // =============================
-// Lancement du bridge simulateur
-// =============================
-function startSimBridge() {
-  try {
-    const bridgePath = path.join(__dirname, 'bridge', 'ACARS_AirCorsica.exe');
-    if (fs.existsSync(bridgePath)) {
-      console.log('🛰️ Lancement du bridge SimConnect/XPlane...');
-      bridgeProcess = spawn(bridgePath, [], {
-        detached: true,
-        stdio: 'ignore',
-      });
-      bridgeProcess.unref();
-    } else {
-      console.warn('⚠️ Bridge introuvable :', bridgePath);
-    }
-  } catch (err) {
-    console.error('❌ Erreur lors du lancement du bridge :', err);
-  }
-}
-
-function startWatchdog() {
-  if (watchdogInterval) clearInterval(watchdogInterval);
-  watchdogInterval = setInterval(() => {
-    if (!bridgeProcess || bridgeProcess.killed) {
-      console.warn('⚠️ Bridge arrêté, redémarrage...');
-      startSimBridge();
-    }
-  }, 8000);
-}
-
-function stopSimBridge() {
-  try {
-    clearInterval(watchdogInterval);
-    if (bridgeProcess && !bridgeProcess.killed) {
-      console.log('🛑 Arrêt du bridge...');
-      bridgeProcess.kill('SIGTERM');
-    }
-  } catch (err) {
-    console.error('⚠️ Impossible d’arrêter le bridge :', err);
-  }
-}
-
-// =============================
-// Gestion des mises à jour automatiques
+// Mises à jour automatiques
 // =============================
 function checkForUpdates() {
   try {
     autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = true;
 
-    // Journalisation
-    autoUpdater.logger = require('electron-log');
-    autoUpdater.logger.transports.file.level = 'info';
-    console.log('🔎 Vérification des mises à jour...');
-
-    autoUpdater.on('update-available', (info) => {
-      console.log(`🔔 Nouvelle mise à jour disponible (${info.version})`);
+    autoUpdater.on('update-available', () => {
+      console.log('🔔 Nouvelle mise à jour disponible');
       if (mainWindow) {
         mainWindow.webContents.executeJavaScript(`
           Swal.fire({
             title: 'Mise à jour disponible',
-            text: 'Une nouvelle version (${info.version}) est disponible. Voulez-vous la télécharger maintenant ?',
+            text: 'Une nouvelle version d’ACARS est disponible. Voulez-vous la télécharger maintenant ?',
             icon: 'info',
             showCancelButton: true,
             confirmButtonText: 'Mettre à jour',
             cancelButtonText: 'Plus tard'
           }).then((result) => {
-            if (result.isConfirmed) window.electronAPI.downloadUpdate();
+            if (result.isConfirmed) {
+              window.electronAPI.downloadUpdate();
+            }
           });
         `);
       }
@@ -136,7 +86,9 @@ function checkForUpdates() {
             title: 'Mise à jour prête',
             text: 'L’application va redémarrer pour terminer la mise à jour.',
             icon: 'success'
-          }).then(() => window.electronAPI.installUpdate());
+          }).then(() => {
+            window.electronAPI.installUpdate();
+          });
         `);
       }
     });
@@ -145,6 +97,7 @@ function checkForUpdates() {
       console.error('❌ Erreur AutoUpdater :', err);
     });
 
+    console.log('🔎 Vérification des mises à jour...');
     autoUpdater.checkForUpdates();
   } catch (error) {
     console.error('Erreur pendant checkForUpdates:', error);
@@ -170,7 +123,7 @@ ipcMain.on('logout', (event) => {
 app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
-  stopSimBridge();
+  bridge.stopBridge(); // ✅ ferme proprement le bridge
   if (process.platform !== 'darwin') app.quit();
 });
 
@@ -178,4 +131,6 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
-app.on('before-quit', stopSimBridge);
+app.on('before-quit', () => {
+  bridge.stopBridge();
+});

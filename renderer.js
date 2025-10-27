@@ -2,8 +2,12 @@
 // ACARS Air Corsica Virtuel - Logique principale
 // ==============================================
 
-import Swal from 'sweetalert2';
-import axios from 'axios';
+// =====================
+// Imports
+// =====================
+const { ipcRenderer } = require('electron');
+const Swal = require('sweetalert2');
+const axios = require('axios');
 
 // =====================
 // Base API
@@ -197,9 +201,9 @@ function startChatPolling() {
 }
 
 // =====================
-// Tracking via Bridge Python
+// Tracking via Bridge local
 // =====================
-async function startBridgeConnection() {
+function startBridgeConnection() {
   try {
     const bridgeSocket = new WebSocket("ws://127.0.0.1:32123");
     bridgeSocket.onopen = () => console.log("🟢 Connecté au bridge SimConnect/XPlane");
@@ -214,11 +218,13 @@ async function startBridgeConnection() {
 }
 
 function updateFlightData(d) {
-  const text = `Latitude: ${d.latitude.toFixed(4)}
+  const text = `
+Latitude: ${d.latitude.toFixed(4)}
 Longitude: ${d.longitude.toFixed(4)}
 Altitude: ${d.altitude.toFixed(0)} ft
 Vitesse: ${d.airspeed.toFixed(0)} kts
-Phase: ${d.phase}`;
+Phase: ${d.phase}
+  `;
   flightData.textContent = text;
 
   if (d.phase === "LANDED" && d.airspeed < 10) {
@@ -242,6 +248,13 @@ sendPirepBtn.addEventListener("click", async () => {
     pirepStatus.textContent = "❌ Erreur lors de l'envoi du PIREP.";
     Swal.fire('Erreur', "Impossible d'envoyer le PIREP.", 'error');
   }
+});
+
+// =====================
+// Réception bridge depuis main.js
+// =====================
+ipcRenderer.on('bridge-data', (event, data) => {
+  updateFlightData(data);
 });
 
 // =====================
