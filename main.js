@@ -9,7 +9,8 @@ import { fileURLToPath } from 'url';
 import Store from 'electron-store';
 import { spawn } from 'child_process';
 import fs from 'fs';
-import { autoUpdater } from 'electron-updater';
+import pkg from 'electron-updater';
+const { autoUpdater } = pkg;
 import * as auth from './modules/auth.js';
 
 const __filename = fileURLToPath(import.meta.url);
