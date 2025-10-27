@@ -49,6 +49,11 @@
       "package.json"
     ],
 
+    "asarUnpack": [
+      "node_modules/electron-updater",
+      "node_modules/electron-store"
+    ],
+
     "publish": [
       {
         "provider": "github",
