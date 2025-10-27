@@ -140,11 +140,17 @@ app.on('activate', () => {
 // =============================
 app.on('before-quit', () => {
   try {
-    bridge.stopBridge();
-  } catch (err) {
-    console.warn('⚠️ Erreur à la fermeture du bridge :', err.message);
+    console.log('🛑 Fermeture complète d’ACARS...');
+    // Stoppe proprement le bridge
+    if (bridge && typeof bridge.stopBridge === 'function') {
+      bridge.stopBridge();
+    }
+    // Tue tous les processus Electron restants
+    const { exec } = require('child_process');
+    exec('taskkill /IM "ACARS Air Corsica Virtuel.exe" /F', (err) => {
+      if (err) console.warn('⚠️ Impossible de forcer la fermeture :', err.message);
+    });
+  } catch (e) {
+    console.error('Erreur pendant la fermeture :', e.message);
   }
-  app.exit(0); // ✅ Force la fermeture totale pour éviter le bug "ACARS ne peut pas être fermé"
 });
-
-console.log('🚀 ACARS Air Corsica Virtuel démarré');
