@@ -1,6 +1,6 @@
 {
   "name": "acars-aircorsica",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "ACARS Air Corsica Virtuel pour MSFS / X-Plane",
   "main": "main.js",
   "author": "Air Corsica Virtuel",
@@ -77,6 +77,7 @@
       "createStartMenuShortcut": true,
       "shortcutName": "ACARS Air Corsica",
       "artifactName": "ACARS_AirCorsica_${version}_Setup.${ext}"
+	  "deleteAppDataOnUninstall": true
     }
   }
 }
