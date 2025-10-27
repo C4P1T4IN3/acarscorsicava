@@ -1,3 +1,8 @@
+/* ============================
+   ACARS Air Corsica Virtuel
+   Style principal (vmsACARS-like)
+   ============================ */
+
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
@@ -8,56 +13,78 @@ body {
   overflow: hidden;
 }
 
-/* Sidebar */
+/* ======================
+   SIDEBAR
+   ====================== */
 .sidebar {
-  width: 230px;
+  width: 240px;
   background: rgba(20, 25, 40, 0.95);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(10px);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 1rem 0.8rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
+  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar-header {
   text-align: center;
-  margin-bottom: 1rem;
 }
 
 .logo {
   width: 80px;
   border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.version {
+  color: #a0a4b8;
+  font-size: 13px;
+  margin-top: 5px;
 }
 
 .menu {
   width: 100%;
+  margin-top: 1rem;
 }
 
 .menu-item {
   width: 100%;
-  padding: 0.8rem;
+  padding: 0.8rem 1rem;
   background: transparent;
   border: none;
   text-align: left;
-  color: #ccc;
+  color: #cdd4ff;
   cursor: pointer;
-  transition: 0.3s;
+  transition: 0.3s ease;
   border-radius: 6px;
+  font-size: 15px;
 }
 
 .menu-item:hover,
 .menu-item.active {
-  background-color: #1e90ff33;
+  background-color: rgba(30, 144, 255, 0.2);
   color: #fff;
 }
 
-.logout {
-  margin-top: auto;
-  padding: 0.7rem;
+.bottom-menu {
   width: 100%;
-  background-color: #ff4d4d33;
-  color: #ff4d4d;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logout {
+  padding: 0.8rem;
+  width: 100%;
+  background-color: rgba(255, 77, 77, 0.1);
+  color: #ff6b6b;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -65,48 +92,113 @@ body {
 }
 
 .logout:hover {
-  background-color: #ff4d4d55;
+  background-color: rgba(255, 77, 77, 0.3);
 }
 
-/* Contenu principal */
+/* ======================
+   CONTENU PRINCIPAL
+   ====================== */
 .main-content {
+  margin-left: 240px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 1rem 2rem;
+  padding: 1.5rem 2rem;
   overflow-y: auto;
+  background: #0c0e15;
 }
 
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: rgba(20, 25, 40, 0.7);
-  padding: 0.8rem 1.5rem;
+  background: rgba(20, 25, 40, 0.7);
+  padding: 0.9rem 1.5rem;
   border-radius: 10px;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.pilot-info span {
+  font-weight: 500;
+  font-size: 15px;
 }
 
 .status.online {
   color: #3cff3c;
+  font-weight: bold;
+  margin-left: 1rem;
 }
 
+/* ======================
+   SECTIONS
+   ====================== */
 .section {
   display: none;
+  animation: fadeIn 0.3s ease;
 }
 
 .section.active {
   display: block;
 }
 
-.card {
-  background: rgba(30, 35, 55, 0.6);
-  border-radius: 10px;
-  padding: 1rem;
-  margin-top: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
+/* ======================
+   CARTES / GRILLES
+   ====================== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.card {
+  background: rgba(30, 35, 55, 0.6);
+  border-radius: 12px;
+  padding: 1.2rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card h3 {
+  margin-top: 0;
+  font-size: 16px;
+  color: #1e90ff;
+  margin-bottom: 10px;
+}
+
+.stats-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stats-list li {
+  padding: 4px 0;
+  color: #b5c6ff;
+  font-size: 14px;
+}
+
+.stats-list strong {
+  color: #1e90ff;
+}
+
+.map {
+  height: 400px;
+  width: 100%;
+  border-radius: 10px;
+  background: #10121a;
+  overflow: hidden;
+}
+
+/* ======================
+   BOUTONS
+   ====================== */
 .btn {
   background-color: #1e90ff;
   color: #fff;
@@ -121,33 +213,40 @@ body {
   background-color: #3aa3ff;
 }
 
-/* Chat */
+.hidden {
+  display: none !important;
+}
+
+/* ======================
+   CHAT
+   ====================== */
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 400px;
+  height: 450px;
 }
 
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.25);
   border-radius: 10px;
   padding: 1rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
 
 .chat-input {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .chat-input input {
   flex: 1;
-  padding: 0.6rem;
+  padding: 0.7rem;
   border-radius: 6px;
   border: none;
   outline: none;
+  font-size: 14px;
 }
 
 .chat-input button {
@@ -155,25 +254,22 @@ body {
   border: none;
   border-radius: 6px;
   color: #fff;
-  padding: 0.6rem 1rem;
+  padding: 0.7rem 1.1rem;
   cursor: pointer;
+  transition: 0.3s;
 }
 
-#map {
-  height: 400px;
-  width: 100%;
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  overflow: hidden;
-}
-.leaflet-container {
-  background: #10121a !important;
+.chat-input button:hover {
+  background-color: #3aa3ff;
 }
 
+/* ======================
+   LOGS
+   ====================== */
 .log-container {
   background: rgba(0, 0, 0, 0.3);
   border-radius: 10px;
-  height: 150px;
+  height: 180px;
   overflow-y: auto;
   padding: 10px;
   font-family: monospace;
@@ -183,7 +279,7 @@ body {
 }
 
 .log-container p {
-  margin: 2px 0;
+  margin: 3px 0;
 }
 
 .log-container p::before {
@@ -191,23 +287,47 @@ body {
   color: #1e90ff;
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 8px;
-  margin-bottom: 15px;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* ======================
+   SCROLLBAR
+   ====================== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
 }
 
-.stat {
-  font-family: 'Segoe UI', sans-serif;
-  font-size: 14px;
-  color: #b5c6ff;
-}
+/* ======================
+   RESPONSIVE
+   ====================== */
+@media (max-width: 1000px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
 
-.stat strong {
-  color: #1e90ff;
+  .sidebar {
+    position: relative;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 0.5rem;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+
+  .logo {
+    width: 60px;
+  }
+
+  .menu-item {
+    font-size: 14px;
+  }
 }

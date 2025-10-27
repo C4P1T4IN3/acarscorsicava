@@ -11,6 +11,8 @@ const chatRefreshDelay = 5000;
 let apiKey = localStorage.getItem("apiKey");
 let currentUser = null;
 let currentFlight = null;
+let map, aircraftMarker, flightPath;
+let pathCoords = [];
 
 // =====================
 // Sélecteurs DOM
@@ -27,53 +29,57 @@ const chatMessages = document.getElementById("chatMessages");
 const chatInput = document.getElementById("chatMessageInput");
 const sendChatBtn = document.getElementById("sendChatBtn");
 const logoutBtn = document.getElementById("logoutBtn");
-
-// =====================
-// Carte Leaflet (avec trajectoire et logs)
-// =====================
-let map, aircraftMarker, flightPath, pathCoords = [];
 const flightLog = document.getElementById("flightLog");
 
-// Initialisation de la carte
+// =====================
+// Initialisation carte Leaflet
+// =====================
 function initMap() {
-  map = L.map('map', {
-    center: [42.0, 9.0],
+  if (typeof L === "undefined") {
+    console.error("❌ Leaflet non chargé !");
+    return;
+  }
+
+  map = L.map("map", {
+    center: [42.5, 9.0],
     zoom: 6,
     zoomControl: true,
   });
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 18,
-    attribution: '© OpenStreetMap contributors',
+    attribution: "© OpenStreetMap contributors",
   }).addTo(map);
 
-  // Marqueur avion
-  aircraftMarker = L.marker([42.0, 9.0], {
+  aircraftMarker = L.marker([42.5, 9.0], {
     icon: L.icon({
-      iconUrl: 'https://cdn-icons-png.flaticon.com/512/182/182548.png',
+      iconUrl: "https://cdn-icons-png.flaticon.com/512/182/182548.png",
       iconSize: [40, 40],
       iconAnchor: [20, 20],
     }),
   }).addTo(map);
 
-  // Ligne de trajectoire
   flightPath = L.polyline([], {
-    color: '#1E90FF',
+    color: "#1E90FF",
     weight: 3,
     opacity: 0.8,
   }).addTo(map);
 }
 
-// Ajoute un événement au log
+// =====================
+// Ajout dans le log de vol
+// =====================
 function addFlightLog(message) {
-  const timestamp = new Date().toLocaleTimeString('fr-FR', { hour12: false });
-  const entry = document.createElement('p');
+  const timestamp = new Date().toLocaleTimeString("fr-FR", { hour12: false });
+  const entry = document.createElement("p");
   entry.textContent = `[${timestamp}] ${message}`;
   flightLog.appendChild(entry);
   flightLog.scrollTop = flightLog.scrollHeight;
 }
 
-// Met à jour les données de vol et la carte
+// =====================
+// Mise à jour du vol (SimConnect bridge)
+// =====================
 function updateFlightData(d) {
   const text = `
 Latitude: ${d.latitude?.toFixed(4) ?? "—"}
@@ -84,7 +90,7 @@ Phase: ${d.phase ?? "—"}
   `;
   flightData.textContent = text;
 
-  // ✅ Mise à jour de la carte et de la trajectoire
+  // ✅ Mise à jour de la carte
   if (map && d.latitude && d.longitude) {
     const pos = [d.latitude, d.longitude];
     aircraftMarker.setLatLng(pos);
@@ -108,14 +114,75 @@ Phase: ${d.phase ?? "—"}
   }
 }
 
-// Initialisation de la carte après le chargement DOM
+// =====================
+// Gestion du chat
+// =====================
+async function sendChatMessage() {
+  const message = chatInput.value.trim();
+  if (!message) return;
+  chatInput.value = "";
+
+  try {
+    const url = `${API_BASE}=chat/send&api_key=${apiKey}`;
+    await axios.post(url, { message });
+    await loadChatMessages();
+  } catch (e) {
+    console.warn("Erreur envoi message:", e.message);
+  }
+}
+
+async function loadChatMessages() {
+  try {
+    const url = `${API_BASE}=chat/list&api_key=${apiKey}`;
+    const res = await axios.get(url);
+    chatMessages.innerHTML = "";
+
+    (res.data.messages || []).forEach((m) => {
+      const p = document.createElement("p");
+      if (m.is_admin) p.classList.add("admin");
+      p.textContent = `${m.user}: ${m.text}`;
+      chatMessages.appendChild(p);
+    });
+
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  } catch (e) {
+    console.warn("Erreur récupération chat:", e.message);
+  }
+}
+
+// =====================
+// Navigation & boutons
+// =====================
+menuItems.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    menuItems.forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    const sectionId = btn.getAttribute("data-section");
+    sections.forEach((s) => s.classList.remove("active"));
+    document.getElementById(sectionId).classList.add("active");
+  });
+});
+
+logoutBtn.addEventListener("click", () => {
+  localStorage.removeItem("apiKey");
+  Swal.fire({
+    title: "Déconnexion",
+    text: "Vous avez été déconnecté.",
+    icon: "info",
+  }).then(() => location.reload());
+});
+
+sendChatBtn.addEventListener("click", sendChatMessage);
+
+// =====================
+// Initialisation
+// =====================
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     if (document.getElementById("map")) initMap();
   }, 500);
 });
-
-
 
 // =====================
 // Navigation entre sections
