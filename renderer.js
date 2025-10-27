@@ -1,13 +1,14 @@
 // ==============================
-// ACARS Air Corsica — Renderer
+// ACARS Air Corsica Virtuel — Renderer complet
 // ==============================
 const API_BASE = "https://crew.aircorsica-virtuel.fr/api_proxy.php?endpoint";
 const chatRefreshDelay = 5000;
 
-// Éléments DOM (tous protégés)
+// ===== Sélecteurs rapides =====
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
+// ===== Éléments DOM =====
 const sections = $$(".section");
 const menuItems = $$(".menu-item");
 const pilotName = $("#pilotName");
@@ -15,7 +16,7 @@ const apiKeyDisplay = $("#apiKeyDisplay");
 const logoutBtn = $("#logoutBtn");
 const flightLog = $("#flightLog");
 
-// HUD
+// ===== HUD =====
 const hud = {
   heading: $("#hud-heading"),
   speed: $("#hud-speed"),
@@ -23,12 +24,12 @@ const hud = {
   phase: $("#hud-phase"),
 };
 
-// Chat
+// ===== Chat =====
 const chatMessages = $("#chatMessages");
 const chatInput = $("#chatMessageInput");
 const sendChatBtn = $("#sendChatBtn");
 
-// Stats overlay
+// ===== Stats Overlay =====
 const elStatDuration = $("#stat-duration");
 const elStatDistance = $("#stat-distance");
 const elStatMaxSpeed = $("#stat-maxspeed");
@@ -36,7 +37,7 @@ const elStatMaxAlt = $("#stat-maxalt");
 const elStatFuel = $("#stat-fuel");
 const elStatPhase = $("#stat-phase");
 
-// État
+// ===== État global =====
 let apiKey = localStorage.getItem("apiKey") || null;
 let currentUser = null;
 let currentFlight = null;
@@ -51,20 +52,23 @@ let maxAltitude = 0;
 let lastPosition = null;
 let totalDistance = 0;
 
-// ============== UI ==============
+// =============================
+// 🧭 NAVIGATION ENTRE SECTIONS
+// =============================
 function showSection(id) {
   sections.forEach((s) => s.classList.remove("active"));
   const el = document.getElementById(id);
   if (el) el.classList.add("active");
 }
+
 menuItems.forEach((btn) => {
   btn.addEventListener("click", () => {
     menuItems.forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
-    const id = btn.getAttribute("data-section");
-    if (id) showSection(id);
+    showSection(btn.getAttribute("data-section"));
   });
 });
+
 if (logoutBtn) {
   logoutBtn.addEventListener("click", () => {
     localStorage.removeItem("apiKey");
@@ -72,29 +76,38 @@ if (logoutBtn) {
   });
 }
 
-// ============== Carte ==============
+// =============================
+// 🗺️ INITIALISATION CARTE
+// =============================
 function initMap() {
-  if (typeof L === "undefined") {
-    console.error("Leaflet non chargé");
-    return;
-  }
+  if (typeof L === "undefined") return console.error("Leaflet non chargé");
+
   map = L.map("map", { center: [42.5, 9.0], zoom: 6, zoomControl: true });
+
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors",
     maxZoom: 18,
   }).addTo(map);
 
-  aircraftMarker = L.marker([42.5, 9.0], {
-    icon: L.icon({
-      iconUrl: "https://cdn-icons-png.flaticon.com/512/182/182548.png",
-      iconSize: [42, 42],
-      iconAnchor: [21, 21],
-    }),
-  }).addTo(map);
+  // --- Icône avion principale (ton avion)
+  const myPlaneIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/162/162740.png",
+    iconSize: [42, 42],
+    iconAnchor: [21, 21],
+  });
 
-  flightPath = L.polyline([], { color: "#1E90FF", weight: 3, opacity: 0.8 }).addTo(map);
+  aircraftMarker = L.marker([42.5, 9.0], { icon: myPlaneIcon }).addTo(map);
+
+  flightPath = L.polyline([], {
+    color: "#1E90FF",
+    weight: 3,
+    opacity: 0.8,
+  }).addTo(map);
 }
 
+// =============================
+// 📜 LOGS EN DIRECT
+// =============================
 function addLog(msg) {
   if (!flightLog) return;
   const t = new Date().toLocaleTimeString("fr-FR", { hour12: false });
@@ -104,6 +117,9 @@ function addLog(msg) {
   flightLog.scrollTop = flightLog.scrollHeight;
 }
 
+// =============================
+// 🎯 HUD (cap, vitesse, altitude)
+// =============================
 function updateHUD(heading, speed, alt, phase) {
   if (hud.heading) hud.heading.textContent = `${(heading || 0).toFixed(0)}°`;
   if (hud.speed) hud.speed.textContent = `${(speed || 0).toFixed(0)} kts`;
@@ -111,28 +127,40 @@ function updateHUD(heading, speed, alt, phase) {
   if (hud.phase) hud.phase.textContent = phase || "—";
 }
 
+// =============================
+// 📏 DISTANCE ENTRE DEUX POINTS
+// =============================
 function haversineNM(p1, p2) {
-  const R = 3440.065, toRad = (d) => (d * Math.PI) / 180;
-  const dLat = toRad(p2.lat - p1.lat), dLon = toRad(p2.lon - p1.lon);
-  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(p1.lat))*Math.cos(toRad(p2.lat))*Math.sin(dLon/2)**2;
+  const R = 3440.065;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(p2.lat - p1.lat);
+  const dLon = toRad(p2.lon - p1.lon);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(p1.lat)) * Math.cos(toRad(p2.lat)) * Math.sin(dLon / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// SimConnect bridge (WS local)
+// =============================
+// 🛰️ SIMCONNECT BRIDGE LOCAL
+// =============================
 function startBridge() {
   try {
     const ws = new WebSocket("ws://127.0.0.1:32123");
-    ws.onopen = () => addLog("Bridge SimConnect connecté");
-    ws.onerror = () => addLog("Bridge indisponible (Sim non lancé)");
+    ws.onopen = () => addLog("✅ Bridge SimConnect connecté");
+    ws.onerror = () => addLog("⚠️ Bridge indisponible (Sim non lancé)");
     ws.onmessage = (e) => {
       const d = JSON.parse(e.data || "{}");
       onSimData(d);
     };
   } catch (e) {
-    addLog(`Erreur bridge: ${e.message}`);
+    addLog(`❌ Erreur bridge: ${e.message}`);
   }
 }
 
+// =============================
+// ✈️ DONNÉES DE VOL SIMULATEUR
+// =============================
 function onSimData(d) {
   const lat = d.latitude ?? 0;
   const lon = d.longitude ?? 0;
@@ -142,26 +170,24 @@ function onSimData(d) {
   const phase = d.phase ?? "—";
   const fuel = d.fuel ?? null;
 
-  // Carte
+  // --- Mise à jour carte
   if (map && lat && lon) {
     const pos = [lat, lon];
     aircraftMarker.setLatLng(pos);
-    if (typeof aircraftMarker.setRotationAngle === "function") {
-      aircraftMarker.setRotationAngle(heading);
-    }
+    if (aircraftMarker.setRotationAngle) aircraftMarker.setRotationAngle(heading);
     pathCoords.push(pos);
     flightPath.setLatLngs(pathCoords);
     if (pathCoords.length === 1) map.setView(pos, 8);
   }
 
-  // Stats cumulées
+  // --- Calculs cumulés
   if (lastPosition && lat && lon) totalDistance += haversineNM(lastPosition, { lat, lon });
   lastPosition = { lat, lon };
   if (speed > maxSpeed) maxSpeed = speed;
   if (alt > maxAltitude) maxAltitude = alt;
   if (!startTime && phase !== "PARKED") startTime = Date.now();
 
-  // HUD + overlays
+  // --- HUD + Stats Overlay
   updateHUD(heading, speed, alt, phase);
   if (elStatDuration) elStatDuration.textContent = fmtTime(startTime ? (Date.now() - startTime) / 1000 : 0);
   if (elStatDistance) elStatDistance.textContent = `${totalDistance.toFixed(1)} nm`;
@@ -171,13 +197,14 @@ function onSimData(d) {
   if (elStatPhase) elStatPhase.textContent = phase;
 
   if (d._phase_logged !== phase && phase) {
-    addLog(`Phase: ${phase}`);
+    addLog(`🟢 Nouvelle phase : ${phase}`);
     d._phase_logged = phase;
   }
 }
 
-// Autres avions
-let othersTimer = null;
+// =============================
+// 🌍 AUTRES AVIONS (membres ACARS)
+// =============================
 async function updateOtherAircraft() {
   if (!map) return;
   try {
@@ -186,6 +213,12 @@ async function updateOtherAircraft() {
 
     Object.values(otherAircraftMarkers).forEach((m) => map.removeLayer(m));
     otherAircraftMarkers = {};
+
+    const otherPlaneIcon = L.icon({
+      iconUrl: "https://cdn-icons-png.flaticon.com/512/1039/1039716.png",
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+    });
 
     flights.forEach((f) => {
       const lat = f?.position?.lat ?? f?.latitude;
@@ -201,33 +234,28 @@ async function updateOtherAircraft() {
       const spd = f?.position?.groundspeed ? `${f.position.groundspeed} kts` : "—";
       const aircraft = f?.aircraft?.name || "—";
 
-      const marker = L.marker([lat, lon], {
-        icon: L.icon({
-          iconUrl: "https://cdn-icons-png.flaticon.com/512/2933/2933861.png",
-          iconSize: [30, 30],
-          iconAnchor: [15, 15],
-        })
-      }).addTo(map);
-
-      if (typeof marker.setRotationAngle === "function") marker.setRotationAngle(hdg);
+      const marker = L.marker([lat, lon], { icon: otherPlaneIcon }).addTo(map);
+      if (marker.setRotationAngle) marker.setRotationAngle(hdg);
 
       marker.bindTooltip(
         `<b>${pilot}</b><br>✈️ ${callsign} (${aircraft})<br>📍 ${dep} → ${arr}<br>⬆️ ${alt} | 💨 ${spd} | 🧭 ${hdg}°`,
         { direction: "top" }
       );
-
       otherAircraftMarkers[pilot] = marker;
     });
   } catch (e) {
-    addLog("Erreur ACARS autres avions");
+    addLog("⚠️ Erreur chargement ACARS autres avions");
   }
 }
 
-// ============== Chat (API proxy) ==============
+// =============================
+// 💬 CHAT PILOTE
+// =============================
 function startChatPolling() {
   loadChatMessages();
   setInterval(loadChatMessages, chatRefreshDelay);
 }
+
 async function loadChatMessages() {
   if (!apiKey || !chatMessages) return;
   try {
@@ -241,8 +269,9 @@ async function loadChatMessages() {
       chatMessages.appendChild(div);
     });
     chatMessages.scrollTop = chatMessages.scrollHeight;
-  } catch {}
+  } catch (e) {}
 }
+
 if (sendChatBtn && chatInput) {
   sendChatBtn.addEventListener("click", async () => {
     const text = chatInput.value.trim();
@@ -251,11 +280,13 @@ if (sendChatBtn && chatInput) {
       await axios.post(`${API_BASE}=chat/send&api_key=${apiKey}`, { message: text });
       chatInput.value = "";
       loadChatMessages();
-    } catch {}
+    } catch (e) {}
   });
 }
 
-// ============== Vols assignés (exemple simple) ==============
+// =============================
+// 🛫 VOLS ASSIGNÉS
+// =============================
 async function loadFlights() {
   if (!apiKey) return;
   const list = document.getElementById("flightsList");
@@ -277,16 +308,20 @@ async function loadFlights() {
       `;
       list.appendChild(card);
     });
-    $$(".start-flight").forEach((b) => b.addEventListener("click", (e) => {
-      currentFlight = { id: e.target.getAttribute("data-id") };
-      Swal.fire("Vol chargé", "Le suivi du vol est actif.", "info");
-    }));
+    $$(".start-flight").forEach((b) =>
+      b.addEventListener("click", (e) => {
+        currentFlight = { id: e.target.getAttribute("data-id") };
+        Swal.fire("Vol chargé", "Le suivi du vol est actif.", "info");
+      })
+    );
   } catch {
     list.innerHTML = "<p style='color:#ff6b6b'>Erreur lors du chargement.</p>";
   }
 }
 
-// ============== Auth (clé API) ==============
+// =============================
+// 🔐 AUTHENTIFICATION
+// =============================
 async function verifyApiKey(key) {
   try {
     const res = await axios.get(`${API_BASE}=user&api_key=${key}`);
@@ -297,7 +332,13 @@ async function verifyApiKey(key) {
     localStorage.setItem("apiKey", key);
     if (pilotName) pilotName.textContent = user.name || user.ident || "Pilote";
     if (apiKeyDisplay) apiKeyDisplay.textContent = key;
-    Swal.fire({ title: "Connexion réussie", text: `Bienvenue ${user.name || ""}`, icon: "success", timer: 1400, showConfirmButton: false });
+    Swal.fire({
+      title: "Connexion réussie",
+      text: `Bienvenue ${user.name || ""}`,
+      icon: "success",
+      timer: 1400,
+      showConfirmButton: false,
+    });
     loadFlights();
     startChatPolling();
   } catch {
@@ -305,18 +346,22 @@ async function verifyApiKey(key) {
   }
 }
 
-// ============== Utils ==============
+// =============================
+// ⏱️ UTILITAIRE FORMAT TEMPS
+// =============================
 function fmtTime(sec) {
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
   return `${h}:${m.toString().padStart(2, "0")}`;
 }
 
-// ============== Boot ==============
+// =============================
+// 🚀 INITIALISATION
+// =============================
 window.addEventListener("DOMContentLoaded", () => {
   initMap();
   startBridge();
-  othersTimer = setInterval(updateOtherAircraft, 15000);
+  setInterval(updateOtherAircraft, 15000);
   setTimeout(updateOtherAircraft, 2000);
 
   if (apiKey) {

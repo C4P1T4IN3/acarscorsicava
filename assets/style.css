@@ -1,4 +1,3 @@
-/* ===== Base ===== */
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
@@ -9,7 +8,7 @@ body {
   overflow: hidden;
 }
 
-/* ===== Sidebar ===== */
+/* Sidebar */
 .sidebar {
   width: 240px;
   background: rgba(20,25,40,0.96);
@@ -22,74 +21,167 @@ body {
 }
 .sidebar-header { text-align: center; margin-bottom: 1.2rem; }
 .logo { width: 70px; border-radius: 10px; }
-.sidebar h2 { margin: 0.6rem 0 0.2rem; color:#1e90ff; font-size:20px; font-weight:600; }
-.version { font-size: .8rem; color:#888; }
+.sidebar h2 { margin: 0.5rem 0 0; color:#1e90ff; }
+.version { font-size: 0.8rem; color:#888; }
 
 .menu { width: 100%; margin-top: 1rem; }
 .menu-item {
-  width: 100%; padding: .8rem; background: transparent; border: none; text-align: left;
-  color:#ccc; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap:.6rem; font-size: 15px;
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  text-align: left;
+  background: transparent;
+  color:#ccc;
+  border-radius:6px;
+  cursor: pointer;
 }
-.menu-item:hover, .menu-item.active { background-color: #1e90ff33; color: #fff; }
+.menu-item:hover, .menu-item.active {
+  background-color: #1e90ff33;
+  color: #fff;
+}
+
+.pilot-card {
+  margin-top: auto;
+  text-align: center;
+  background: rgba(30, 35, 55, 0.5);
+  padding: 0.8rem;
+  border-radius: 10px;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+.status.online { color: #00ff6a; }
 
 .logout {
-  margin-top: auto; padding: .7rem; width: 100%; background:#ff4d4d33; color:#ff4d4d;
-  border:none; border-radius:6px; cursor:pointer; font-weight:600;
+  padding: 0.7rem;
+  width: 100%;
+  background-color: #ff4d4d33;
+  color: #ff4d4d;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
 }
-.logout:hover { background:#ff4d4d55; }
+.logout:hover { background-color: #ff4d4d55; }
 
-/* ===== Main ===== */
-.main-content { flex:1; display:flex; flex-direction:column; padding:1rem 2rem; overflow:hidden; }
-.topbar {
-  display:flex; justify-content:space-between; align-items:center;
-  background: rgba(20,25,40,.8); padding:.8rem 1.5rem; border-radius:10px; margin-bottom:1rem;
+/* Dashboard */
+.dashboard {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
-.status.online { color:#00ff6a; }
 
-.section { display:none; height:100%; overflow:hidden; }
-.section.active { display:block; }
-
-/* ===== Carte ===== */
-.map-container {
-  position:relative; width:100%; height:calc(100vh - 100px);
-  border-radius:10px; overflow:hidden;
+/* Carte */
+#map {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
 }
-#map { width:100%; height:100%; }
 
-/* Overlay stats */
-.flight-overlay{
-  position:absolute; top:20px; left:20px;
-  background:rgba(10,14,25,.85); border-radius:10px; padding:12px 16px;
-  color:#b5c6ff; font-size:14px; line-height:1.6; border:1px solid rgba(255,255,255,.1);
-  z-index:10; width:230px;
+/* Overlay infos */
+.info-pilote {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background: rgba(20,25,40,0.9);
+  padding: 1rem;
+  border-radius: 10px;
+  z-index: 10;
+  width: 250px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
 }
-.flight-overlay h3{ margin:0 0 6px; color:#fff; font-size:15px; }
+.info-pilote h3 { margin: 0 0 10px; color: #1e90ff; font-size: 16px; }
+.info-pilote ul { list-style: none; margin: 0; padding: 0; font-size: 14px; }
+.info-pilote li { margin: 4px 0; color:#b5c6ff; }
+.info-pilote strong { color: #1e90ff; }
 
-/* Overlay logs */
-.log-overlay{
-  position:absolute; bottom:20px; right:20px; z-index:10;
-  background:rgba(15,20,35,.85); border:1px solid rgba(255,255,255,.1);
-  border-radius:10px; padding:10px 15px; width:360px; height:170px; color:#b5c6ff; overflow-y:auto;
+/* Logs overlay */
+.log-overlay {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  background: rgba(20,25,40,0.9);
+  padding: 1rem;
+  border-radius: 10px;
+  z-index: 10;
+  width: 340px;
+  height: 160px;
+  overflow-y: auto;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
 }
-.log-overlay h3{ margin:0 0 6px; color:#fff; font-size:15px; }
+.log-overlay h3 { margin: 0 0 8px; color: #1e90ff; }
 
 /* HUD */
-#hud{
-  position:absolute; left:0; right:0; bottom:0; height:46px; z-index:9;
-  background:rgba(0,0,0,.5); border-top:1px solid rgba(255,255,255,.1);
-  display:flex; align-items:center; justify-content:center; gap:2rem; color:#1e90ff; font-size:15px;
+#hud {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45px;
+  background: rgba(0,0,0,0.6);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  color: #1e90ff;
+  font-weight: 600;
 }
 
 /* Chat */
-.chat-container{ background:rgba(20,25,40,.7); border-radius:10px; display:flex; flex-direction:column; height:75vh; padding:1rem;}
-.chat-messages{ flex:1; overflow-y:auto; border:1px solid rgba(255,255,255,.05); padding:.8rem; border-radius:10px; background:rgba(10,15,25,.5);}
-.chat.user{ background:rgba(30,144,255,.15); margin:.4rem 0; padding:.4rem .6rem; border-radius:6px;}
-.chat.admin{ background:rgba(255,255,255,.1); color:#ffdc73; margin:.4rem 0; padding:.4rem .6rem; border-radius:6px;}
-.chat-input{ display:flex; gap:.5rem; margin-top:.8rem;}
-.chat-input input{ flex:1; border:none; border-radius:8px; padding:.7rem; background:rgba(255,255,255,.08); color:#fff; outline:none;}
-.chat-input button{ background:#1e90ff; color:#fff; border:none; border-radius:8px; padding:.7rem 1rem; font-weight:600; cursor:pointer;}
-.chat-input button:hover{ background:#007bff; }
+.chat-container {
+  background: rgba(20,25,40,0.7);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 75vh;
+  padding: 1rem;
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 0.8rem;
+  border-radius: 10px;
+  background: rgba(10,15,25,0.5);
+}
+.chat.user {
+  background: rgba(30,144,255,0.15);
+  margin: .4rem 0;
+  padding: .4rem .6rem;
+  border-radius: 6px;
+}
+.chat.admin {
+  background: rgba(255,255,255,0.1);
+  color: #ffdc73;
+  margin: .4rem 0;
+  padding: .4rem .6rem;
+  border-radius: 6px;
+}
+.chat-input {
+  display: flex;
+  gap: .5rem;
+  margin-top: .8rem;
+}
+.chat-input input {
+  flex: 1;
+  border: none;
+  border-radius: 8px;
+  padding: .7rem;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  outline: none;
+}
+.chat-input button {
+  background: #1e90ff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: .7rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chat-input button:hover { background: #007bff; }
 
-/* Scrollbar */
-::-webkit-scrollbar{ width:8px; }
-::-webkit-scrollbar-thumb{ background:#1e90ff88; border-radius:4px; }
+/* Scrollbars */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: #1e90ff88; border-radius: 4px; }
