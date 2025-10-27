@@ -11,6 +11,11 @@ const bridge = require("./modules/bridge.js");
 const auth = require("./modules/auth.js");
 const log = require("electron-log");
 
+const log = require("electron-log");
+log.initialize({ preload: true });
+log.transports.file.level = "info";
+log.info("🛫 ACARS Air Corsica — Initialisation du logger");
+
 // =============================
 // Chargement sécurisé du module electron-updater
 // =============================
