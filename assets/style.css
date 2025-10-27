@@ -1,5 +1,5 @@
 /* ===========================================================
-   🎨 ACARS Air Corsica Virtuel — Interface moderne
+   🎨 ACARS Air Corsica Virtuel — Interface moderne optimisée
    =========================================================== */
 
 body {
@@ -13,7 +13,7 @@ body {
 }
 
 /* ===========================================================
-   Sidebar (menu de gauche)
+   SIDEBAR (menu gauche)
    =========================================================== */
 .sidebar {
   width: 240px;
@@ -93,7 +93,7 @@ body {
 }
 
 /* ===========================================================
-   Main content
+   MAIN CONTENT
    =========================================================== */
 .main-content {
   flex: 1;
@@ -105,7 +105,7 @@ body {
 }
 
 /* ===========================================================
-   Topbar (barre supérieure)
+   TOPBAR
    =========================================================== */
 .topbar {
   display: flex;
@@ -134,7 +134,7 @@ body {
 }
 
 /* ===========================================================
-   Sections
+   SECTIONS
    =========================================================== */
 .section {
   display: none;
@@ -146,127 +146,84 @@ body {
 }
 
 /* ===========================================================
-   Tableau de bord
+   TABLEAU DE BORD (Carte plein écran + Overlays)
    =========================================================== */
-.dashboard-layout {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 1rem;
-  height: calc(100% - 60px);
-}
-
-/* Carte principale */
-.map-wrapper {
+.map-container {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: calc(100vh - 100px);
   border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
 
-.map {
+#map {
   width: 100%;
   height: 100%;
-  border-radius: 10px;
   z-index: 1;
 }
 
-/* Overlay infos sur la carte */
-.map-overlay {
+/* === Overlay infos de vol === */
+.flight-overlay {
   position: absolute;
-  top: 15px;
-  left: 15px;
+  top: 20px;
+  left: 20px;
   background: rgba(10, 14, 25, 0.85);
   border-radius: 10px;
-  padding: 10px 15px;
+  padding: 12px 16px;
   color: #b5c6ff;
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.6;
   border: 1px solid rgba(255,255,255,0.1);
   z-index: 10;
-  width: 180px;
+  width: 230px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
-.map-overlay strong {
+.flight-overlay h3 {
   color: #1e90ff;
-  display: inline-block;
-  width: 90px;
-}
-
-/* Panneaux latéraux */
-.side-panels {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  overflow-y: auto;
-}
-
-/* Cartes */
-.card {
-  background: rgba(30, 35, 55, 0.65);
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  animation: fadeIn 0.3s ease;
-}
-
-.card h3 {
-  color: #1e90ff;
-  font-size: 16px;
-  margin-bottom: 0.8rem;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 15px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
   padding-bottom: 5px;
 }
 
-.stats-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.stats-list li {
-  font-size: 14px;
-  color: #b5c6ff;
+.flight-overlay p {
   margin: 4px 0;
 }
-.stats-list strong {
-  color: #1e90ff;
+
+/* === Logs overlay === */
+.log-overlay {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(15, 20, 35, 0.85);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 15px;
+  width: 350px;
+  height: 160px;
+  color: #b5c6ff;
+  overflow-y: auto;
+  z-index: 10;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
 }
 
-.log-container {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 10px;
-  height: 150px;
-  overflow-y: auto;
-  padding: 10px;
+.log-overlay h3 {
+  color: #1e90ff;
+  margin-bottom: 6px;
+  font-size: 15px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.log-overlay p {
   font-family: monospace;
   font-size: 13px;
-  color: #b5c6ff;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 2px 0;
 }
 
 /* ===========================================================
-   Boutons
-   =========================================================== */
-.btn {
-  display: inline-block;
-  background-color: #1e90ff;
-  color: #fff;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-  font-weight: 600;
-}
-.btn:hover {
-  background-color: #007bff;
-}
-.btn.hidden {
-  display: none;
-}
-
-/* ===========================================================
-   Chat pilote
+   CHAT PILOTE
    =========================================================== */
 .chat-container {
   background: rgba(20,25,40,0.7);
@@ -331,7 +288,28 @@ body {
 }
 
 /* ===========================================================
-   Scrollbars custom
+   BOUTONS GÉNÉRAUX
+   =========================================================== */
+.btn {
+  display: inline-block;
+  background-color: #1e90ff;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 600;
+}
+.btn:hover {
+  background-color: #007bff;
+}
+.btn.hidden {
+  display: none;
+}
+
+/* ===========================================================
+   SCROLLBAR CUSTOM
    =========================================================== */
 ::-webkit-scrollbar {
   width: 8px;
@@ -345,7 +323,7 @@ body {
 }
 
 /* ===========================================================
-   Animations
+   ANIMATIONS
    =========================================================== */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
@@ -353,7 +331,7 @@ body {
 }
 
 /* ===========================================================
-   Map legend
+   LÉGENDE DE CARTE
    =========================================================== */
 .map-legend {
   color: #fff;

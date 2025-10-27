@@ -14,7 +14,7 @@
 
 <body>
   <div id="app">
-    <!-- Sidebar -->
+    <!-- ================= Sidebar ================= -->
     <aside class="sidebar">
       <div class="sidebar-header">
         <img src="assets/logo.png" alt="Logo Air Corsica" class="logo" />
@@ -34,7 +34,7 @@
       </div>
     </aside>
 
-    <!-- Contenu principal -->
+    <!-- ================= Contenu principal ================= -->
     <main class="main-content">
       <!-- En-tête -->
       <header class="topbar">
@@ -44,44 +44,31 @@
         </div>
       </header>
 
-      <!-- SECTION : Tableau de bord -->
+      <!-- ================= SECTION : Tableau de bord ================= -->
       <section id="dashboard" class="section active">
-        <div class="dashboard-layout">
-          <!-- Carte principale -->
-          <div class="map-wrapper">
-            <div id="map" class="map"></div>
+        <div class="map-container">
+          <div id="map"></div>
+
+          <!-- Overlay d'informations -->
+          <div class="flight-overlay">
+            <h3>✈️ Suivi du vol</h3>
+            <p><strong>Durée :</strong> <span id="stat-duration">0:00</span></p>
+            <p><strong>Distance :</strong> <span id="stat-distance">0 nm</span></p>
+            <p><strong>Vitesse max :</strong> <span id="stat-maxspeed">0 kts</span></p>
+            <p><strong>Altitude max :</strong> <span id="stat-maxalt">0 ft</span></p>
+            <p><strong>Carburant :</strong> <span id="stat-fuel">--</span></p>
+            <p><strong>Phase :</strong> <span id="stat-phase">Aucune</span></p>
           </div>
 
-          <!-- Panneaux latéraux -->
-          <div class="side-panels">
-            <div class="card stats">
-              <h3>Statistiques du vol</h3>
-              <ul class="stats-list">
-                <li><strong>⏱️ Durée :</strong> <span id="stat-duration">0:00</span></li>
-                <li><strong>📍 Distance :</strong> <span id="stat-distance">0 nm</span></li>
-                <li><strong>💨 Vitesse max :</strong> <span id="stat-maxspeed">0 kts</span></li>
-                <li><strong>🏔️ Altitude max :</strong> <span id="stat-maxalt">0 ft</span></li>
-                <li><strong>⛽ Carburant :</strong> <span id="stat-fuel">--</span></li>
-                <li><strong>✈️ Phase :</strong> <span id="stat-phase">Aucune</span></li>
-              </ul>
-            </div>
-
-            <div class="card logs">
-              <h3>Logs du vol</h3>
-              <div id="flightLog" class="log-container"></div>
-            </div>
-
-            <div class="card status">
-              <h3>Statut du vol</h3>
-              <pre id="flightData">En attente du simulateur...</pre>
-              <p id="pirepStatus"></p>
-              <button id="sendPirepBtn" class="btn hidden">✈️ Envoyer le PIREP</button>
-            </div>
+          <!-- Logs en bas à droite -->
+          <div class="log-overlay">
+            <h3>Logs du vol</h3>
+            <div id="flightLog"></div>
           </div>
         </div>
       </section>
 
-      <!-- SECTION : Vols assignés -->
+      <!-- ================= SECTION : Vols assignés ================= -->
       <section id="flights" class="section">
         <h2>Vols assignés</h2>
         <div id="flightsList" class="card">
@@ -89,7 +76,7 @@
         </div>
       </section>
 
-      <!-- SECTION : Chat pilote -->
+      <!-- ================= SECTION : Chat pilote ================= -->
       <section id="chat" class="section">
         <h2>Chat pilote</h2>
         <div class="chat-container">
@@ -101,7 +88,7 @@
         </div>
       </section>
 
-      <!-- SECTION : Paramètres -->
+      <!-- ================= SECTION : Paramètres ================= -->
       <section id="settings" class="section">
         <h2>Paramètres</h2>
         <p>Clé API : <span id="apiKeyDisplay">Non définie</span></p>
@@ -109,7 +96,7 @@
     </main>
   </div>
 
-  <!-- 📦 Librairies JS -->
+  <!-- ================= Librairies JS ================= -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
