@@ -1,6 +1,6 @@
 {
   "name": "acars-aircorsica",
-  "version": "1.0.26",
+  "version": "1.0.27",
   "description": "ACARS Air Corsica Virtuel pour MSFS / X-Plane",
   "main": "main.js",
   "author": "Air Corsica Virtuel",
@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "axios": "^1.6.8",
+    "electron-log": "^5.4.3",
     "electron-store": "^8.1.0",
     "electron-updater": "^6.3.4",
     "sweetalert2": "^11.11.0",
@@ -58,7 +59,9 @@
       "target": "nsis",
       "icon": "assets/logo.ico",
       "publisherName": "Air Corsica Virtuel",
-      "signingHashAlgorithms": ["sha256"],
+      "signingHashAlgorithms": [
+        "sha256"
+      ],
       "requestedExecutionLevel": "asInvoker",
       "certificateFile": "C:/certificat_acars.pfx",
       "certificatePassword": "acars123"
