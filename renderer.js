@@ -2,11 +2,8 @@
 // ACARS Air Corsica Virtuel - Logique principale
 // ==============================================
 
-// =====================
-// Imports (front-end only)
-// =====================
-import Swal from "sweetalert2";
-import axios from "axios";
+// Les bibliothèques front sont chargées via des <script> dans index.html
+// donc pas de require/import ici
 
 // =====================
 // Base API
@@ -16,6 +13,8 @@ const API_BASE = "https://crew.aircorsica-virtuel.fr/api_proxy.php?endpoint";
 // =====================
 // Éléments DOM
 // =====================
+const axios = require("axios");
+const Swal = require("sweetalert2");
 const loginScreen = document.getElementById("loginScreen");
 const mainApp = document.getElementById("mainApp");
 const loginBtn = document.getElementById("loginBtn");
@@ -64,7 +63,6 @@ async function verifyApiKey(key) {
         timer: 2000,
         showConfirmButton: false,
       });
-
       return true;
     } else {
       loginMsg.textContent = "❌ Clé API invalide.";
@@ -119,12 +117,12 @@ sidebarItems.forEach((item) => {
     const section = item.getAttribute("data-section");
     if (!section) return;
 
-    document.querySelectorAll(".section").forEach((s) => s.classList.remove("active"));
+    document.querySelectorAll(".section").forEach((s) =>
+      s.classList.remove("active")
+    );
     document.getElementById(section).classList.add("active");
 
-    if (section === "chat") {
-      chatPopup.classList.remove("hidden");
-    }
+    if (section === "chat") chatPopup.classList.remove("hidden");
   });
 });
 
@@ -146,13 +144,10 @@ document.addEventListener("mousemove", (e) => {
   }
 });
 
-document.addEventListener("mouseup", () => {
-  dragging = false;
-});
-
-closeChatBtn.addEventListener("click", () => {
-  chatPopup.classList.add("hidden");
-});
+document.addEventListener("mouseup", () => (dragging = false));
+closeChatBtn.addEventListener("click", () =>
+  chatPopup.classList.add("hidden")
+);
 
 // =====================
 // Envoi message chat
@@ -200,18 +195,19 @@ function startChatPolling() {
 }
 
 // =====================
-// Tracking via Bridge local
+// Bridge local (SimConnect / X-Plane)
 // =====================
 function startBridgeConnection() {
   try {
     const bridgeSocket = new WebSocket("ws://127.0.0.1:32123");
-    bridgeSocket.onopen = () => console.log("🟢 Connecté au bridge SimConnect/XPlane");
+    bridgeSocket.onopen = () =>
+      console.log("🟢 Connecté au bridge SimConnect/XPlane");
     bridgeSocket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       updateFlightData(data);
     };
     bridgeSocket.onerror = () =>
-      console.warn("⚠️ Impossible de se connecter au bridge local (sim non détecté)");
+      console.warn("⚠️ Impossible de se connecter au bridge local");
   } catch (e) {
     console.error("Erreur bridge:", e.message);
   }
@@ -242,7 +238,6 @@ sendPirepBtn.addEventListener("click", async () => {
     await axios.post(url, { flight: currentFlight || {}, user: currentUser });
     pirepStatus.textContent = "✅ PIREP envoyé avec succès !";
     sendPirepBtn.classList.add("hidden");
-
     Swal.fire("Succès", "PIREP envoyé avec succès !", "success");
   } catch (e) {
     pirepStatus.textContent = "❌ Erreur lors de l'envoi du PIREP.";
@@ -251,12 +246,10 @@ sendPirepBtn.addEventListener("click", async () => {
 });
 
 // =====================
-// Réception bridge depuis main.js
+// Réception bridge depuis preload
 // =====================
 if (window.electronAPI) {
-  window.electronAPI.onBridgeData?.((data) => {
-    updateFlightData(data);
-  });
+  window.electronAPI.onBridgeData?.((data) => updateFlightData(data));
 }
 
 // =====================
