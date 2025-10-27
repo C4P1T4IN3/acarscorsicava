@@ -1,21 +1,13 @@
-// =============================
-// ACARS Air Corsica Virtuel
-// main.js (CommonJS complet)
-// =============================
-
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { autoUpdater } = require('electron-updater'); 
+const Store = require('electron-store'); // ✅ Import normal (CommonJS)
+const { autoUpdater } = require('electron-updater'); // ✅ Import normal
 const auth = require('./modules/auth.js');
-const bridge = require('./modules/bridge.js'); // ✅ Module bridge intégré
+const bridge = require('./modules/bridge.js');
 
-// =============================
-// Import dynamique de electron-store (ESM compatible CommonJS)
-// =============================
-let Store;
-let store;
-
+let mainWindow = null;
+let store = new Store(); // ✅ Instance unique de store
 (async () => {
   const mod = await import('electron-store');
   Store = mod.default;

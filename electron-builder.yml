@@ -1,0 +1,6 @@
+appId: com.aircorsica.acars
+asarUnpack:
+  - node_modules/electron-updater
+  - node_modules/electron-store
+extraMetadata:
+  type: commonjs
