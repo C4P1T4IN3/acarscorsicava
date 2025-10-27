@@ -1,6 +1,7 @@
 // ==============================
-// ACARS Air Corsica Virtuel — Renderer complet
+// ACARS Air Corsica Virtuel — Renderer complet (version stable)
 // ==============================
+
 const API_BASE = "https://crew.aircorsica-virtuel.fr/api_proxy.php?endpoint";
 const chatRefreshDelay = 5000;
 
@@ -89,7 +90,6 @@ function initMap() {
     maxZoom: 18,
   }).addTo(map);
 
-  // --- Icône avion principale (ton avion)
   const myPlaneIcon = L.icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/162/162740.png",
     iconSize: [42, 42],
@@ -98,11 +98,7 @@ function initMap() {
 
   aircraftMarker = L.marker([42.5, 9.0], { icon: myPlaneIcon }).addTo(map);
 
-  flightPath = L.polyline([], {
-    color: "#1E90FF",
-    weight: 3,
-    opacity: 0.8,
-  }).addTo(map);
+  flightPath = L.polyline([], { color: "#1E90FF", weight: 3, opacity: 0.8 }).addTo(map);
 }
 
 // =============================
@@ -170,7 +166,6 @@ function onSimData(d) {
   const phase = d.phase ?? "—";
   const fuel = d.fuel ?? null;
 
-  // --- Mise à jour carte
   if (map && lat && lon) {
     const pos = [lat, lon];
     aircraftMarker.setLatLng(pos);
@@ -180,14 +175,12 @@ function onSimData(d) {
     if (pathCoords.length === 1) map.setView(pos, 8);
   }
 
-  // --- Calculs cumulés
   if (lastPosition && lat && lon) totalDistance += haversineNM(lastPosition, { lat, lon });
   lastPosition = { lat, lon };
   if (speed > maxSpeed) maxSpeed = speed;
   if (alt > maxAltitude) maxAltitude = alt;
   if (!startTime && phase !== "PARKED") startTime = Date.now();
 
-  // --- HUD + Stats Overlay
   updateHUD(heading, speed, alt, phase);
   if (elStatDuration) elStatDuration.textContent = fmtTime(startTime ? (Date.now() - startTime) / 1000 : 0);
   if (elStatDistance) elStatDistance.textContent = `${totalDistance.toFixed(1)} nm`;
@@ -203,7 +196,7 @@ function onSimData(d) {
 }
 
 // =============================
-// 🌍 AUTRES AVIONS (membres ACARS)
+// 🌍 AUTRES AVIONS (ACARS)
 // =============================
 async function updateOtherAircraft() {
   if (!map) return;
@@ -243,7 +236,7 @@ async function updateOtherAircraft() {
       );
       otherAircraftMarkers[pilot] = marker;
     });
-  } catch (e) {
+  } catch {
     addLog("⚠️ Erreur chargement ACARS autres avions");
   }
 }
@@ -269,7 +262,7 @@ async function loadChatMessages() {
       chatMessages.appendChild(div);
     });
     chatMessages.scrollTop = chatMessages.scrollHeight;
-  } catch (e) {}
+  } catch {}
 }
 
 if (sendChatBtn && chatInput) {
@@ -280,7 +273,7 @@ if (sendChatBtn && chatInput) {
       await axios.post(`${API_BASE}=chat/send&api_key=${apiKey}`, { message: text });
       chatInput.value = "";
       loadChatMessages();
-    } catch (e) {}
+    } catch {}
   });
 }
 
@@ -294,7 +287,10 @@ async function loadFlights() {
   try {
     const res = await axios.get(`${API_BASE}=flights&api_key=${apiKey}`);
     const flights = res.data?.flights || [];
-    if (!flights.length) { list.innerHTML = "<p>Aucun vol assigné.</p>"; return; }
+    if (!flights.length) {
+      list.innerHTML = "<p>Aucun vol assigné.</p>";
+      return;
+    }
     list.innerHTML = "";
     flights.forEach((f) => {
       const card = document.createElement("div");
@@ -353,6 +349,42 @@ function fmtTime(sec) {
   const h = Math.floor(sec / 3600);
   const m = Math.floor((sec % 3600) / 60);
   return `${h}:${m.toString().padStart(2, "0")}`;
+}
+
+// =============================
+// ⚙️ GESTION MISE À JOUR (autoUpdater)
+// =============================
+if (window.electronAPI) {
+  window.electronAPI.onBridgeData((data) => {
+    if (data.type === "update-available") {
+      Swal.fire({
+        title: "Mise à jour disponible",
+        text: `Version ${data.version} trouvée. Téléchargement...`,
+        icon: "info",
+        showConfirmButton: false,
+      });
+    }
+
+    if (data.type === "update-progress") {
+      Swal.update({ text: `Téléchargement ${data.percent}%...` });
+    }
+
+    if (data.type === "update-downloaded") {
+      Swal.fire({
+        title: "Mise à jour prête",
+        text: "Redémarrer maintenant pour installer ?",
+        icon: "success",
+        showCancelButton: true,
+        confirmButtonText: "Installer maintenant",
+      }).then((r) => {
+        if (r.isConfirmed) window.electronAPI.installUpdate();
+      });
+    }
+
+    if (data.type === "update-error") {
+      Swal.fire("Erreur", data.message || "Échec de la vérification de mise à jour.", "error");
+    }
+  });
 }
 
 // =============================

@@ -1,13 +1,15 @@
 // =============================
 // ACARS Air Corsica Virtuel
-// main.js — version stable (Electron + AutoUpdater)
+// main.js — Version finale stable avec AutoUpdater GitHub
 // =============================
 
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
+const fs = require("fs");
 const Store = require("electron-store");
 const bridge = require("./modules/bridge.js");
 const auth = require("./modules/auth.js");
+const log = require("electron-log");
 
 // =============================
 // Chargement sécurisé du module electron-updater
@@ -18,6 +20,7 @@ try {
 } catch (err) {
   const updater = require("electron-updater");
   autoUpdater = updater.autoUpdater || updater.default.autoUpdater;
+  log.warn("⚠️ Fallback de electron-updater activé");
 }
 
 // =============================
@@ -25,6 +28,14 @@ try {
 // =============================
 let mainWindow = null;
 const store = new Store();
+let bridgeActive = false;
+
+// =============================
+// Configuration du logger
+// =============================
+autoUpdater.logger = log;
+autoUpdater.logger.transports.file.level = "info";
+log.info("🚀 ACARS Air Corsica Virtuel démarré");
 
 // =============================
 // Création de la fenêtre principale
@@ -46,21 +57,23 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, "index.html"));
-  // mainWindow.webContents.openDevTools(); // 🔧 debug uniquement
+  // mainWindow.webContents.openDevTools(); // 🔧 Debug
 
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 
-  // ✅ Démarrer le bridge simulateur (si disponible)
+  // ✅ Démarrer le bridge simulateur
   try {
     bridge.startBridge(__dirname, (data) => {
+      bridgeActive = true;
       if (mainWindow && mainWindow.webContents) {
         mainWindow.webContents.send("bridge-data", data);
       }
     });
+    log.info("✅ Bridge SimConnect démarré");
   } catch (e) {
-    console.warn("⚠️ Impossible de démarrer le bridge:", e.message);
+    log.warn("⚠️ Bridge non disponible :", e.message);
   }
 
   // ✅ Vérifier les mises à jour après 5 secondes
@@ -72,16 +85,16 @@ function createWindow() {
 // =============================
 function checkForUpdates() {
   try {
-    autoUpdater.autoDownload = false;
+    log.info("🔍 Vérification des mises à jour GitHub...");
+    autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
     autoUpdater.allowPrerelease = false;
 
-    console.log("🔍 Vérification des mises à jour GitHub...");
-    autoUpdater.checkForUpdates();
+    autoUpdater.checkForUpdatesAndNotify(); // ✅ Version complète
 
-    // 🔹 Quand une mise à jour est trouvée
+    // 📦 Nouvelle mise à jour trouvée
     autoUpdater.on("update-available", (info) => {
-      console.log(`📦 Nouvelle version ${info.version} trouvée`);
+      log.info(`📦 Nouvelle version ${info.version} trouvée`);
       if (mainWindow) {
         mainWindow.webContents.send("bridge-data", {
           type: "update-available",
@@ -90,19 +103,32 @@ function checkForUpdates() {
       }
     });
 
-    // 🔹 Quand la mise à jour est téléchargée
-    autoUpdater.on("update-downloaded", () => {
-      console.log("✅ Mise à jour téléchargée, prête à installer");
+    // 📥 Progression du téléchargement
+    autoUpdater.on("download-progress", (progress) => {
+      const percent = Math.round(progress.percent);
+      log.info(`⬇️ Progression téléchargement: ${percent}%`);
       if (mainWindow) {
         mainWindow.webContents.send("bridge-data", {
-          type: "update-downloaded",
+          type: "update-progress",
+          percent,
         });
       }
     });
 
-    // 🔹 Erreur
+    // ✅ Téléchargée et prête à installer
+    autoUpdater.on("update-downloaded", (info) => {
+      log.info(`✅ Mise à jour ${info.version} prête à installer`);
+      if (mainWindow) {
+        mainWindow.webContents.send("bridge-data", {
+          type: "update-downloaded",
+          version: info.version,
+        });
+      }
+    });
+
+    // ❌ Erreur
     autoUpdater.on("error", (err) => {
-      console.error("❌ Erreur AutoUpdater:", err.message);
+      log.error("❌ Erreur AutoUpdater :", err.message);
       if (mainWindow) {
         mainWindow.webContents.send("bridge-data", {
           type: "update-error",
@@ -111,47 +137,68 @@ function checkForUpdates() {
       }
     });
   } catch (error) {
-    console.error("Erreur pendant checkForUpdates:", error);
+    log.error("Erreur checkForUpdates :", error);
   }
 }
 
 // =============================
-// ⚙️ IPC: mise à jour, auth & logout
+// 🧩 IPC : gestion des actions depuis renderer
 // =============================
 ipcMain.handle("download-update", async () => {
   try {
+    log.info("⏬ Téléchargement manuel de la mise à jour...");
     await autoUpdater.downloadUpdate();
   } catch (e) {
-    console.error("Erreur téléchargement MAJ:", e.message);
+    log.error("Erreur téléchargement MAJ :", e.message);
   }
 });
 
 ipcMain.handle("install-update", async () => {
   try {
+    log.info("🔧 Installation de la mise à jour...");
     autoUpdater.quitAndInstall();
   } catch (e) {
-    console.error("Erreur installation MAJ:", e.message);
+    log.error("Erreur installation MAJ :", e.message);
   }
 });
 
-// Authentification utilisateur locale
+// 🔐 Authentification utilisateur
 ipcMain.handle("get-stored-token", () => auth.getToken());
-ipcMain.on("save-token", (event, token) => auth.saveKey(token));
+ipcMain.on("save-token", (event, token) => {
+  log.info("🔑 Token sauvegardé");
+  auth.saveKey(token);
+});
 ipcMain.on("logout", (event) => {
   auth.clearKey();
   event.reply("logged-out");
+  log.info("🚪 Déconnexion effectuée");
 });
 
 // =============================
-// 🧩 Cycle de vie Electron
+// 🪄 Gestion des erreurs globales
+// =============================
+process.on("uncaughtException", (err) => {
+  log.error("❌ Exception non gérée :", err);
+});
+process.on("unhandledRejection", (reason) => {
+  log.error("❌ Promise rejetée sans catch :", reason);
+});
+
+// =============================
+// 🧠 Cycle de vie Electron
 // =============================
 app.whenReady().then(createWindow);
 
 app.on("window-all-closed", () => {
+  log.info("🧹 Fermeture des fenêtres...");
   try {
-    if (bridge && typeof bridge.stopBridge === "function") bridge.stopBridge();
+    if (bridge && typeof bridge.stopBridge === "function") {
+      bridge.stopBridge();
+      bridgeActive = false;
+      log.info("🛑 Bridge arrêté proprement");
+    }
   } catch (e) {
-    console.warn("⚠️ Erreur à la fermeture du bridge:", e.message);
+    log.warn("⚠️ Erreur lors de la fermeture du bridge :", e.message);
   }
   if (process.platform !== "darwin") app.quit();
 });
@@ -164,12 +211,13 @@ app.on("activate", () => {
 // 🧹 Fermeture propre (support NSIS)
 // =============================
 app.on("before-quit", () => {
-  console.log("🛑 Fermeture d’ACARS...");
+  log.info("🛑 Fermeture complète d’ACARS...");
   try {
-    if (bridge && typeof bridge.stopBridge === "function") {
+    if (bridgeActive && bridge && typeof bridge.stopBridge === "function") {
       bridge.stopBridge();
+      bridgeActive = false;
     }
   } catch (e) {
-    console.error("Erreur pendant la fermeture:", e.message);
+    log.error("Erreur pendant la fermeture :", e.message);
   }
 });
