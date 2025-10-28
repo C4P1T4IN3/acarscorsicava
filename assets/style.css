@@ -1,67 +1,105 @@
-body,html{margin:0;height:100vh;overflow:hidden;background:#0c0e15;font-family:'Segoe UI',sans-serif;color:#fff;display:flex}
+body,html{
+  margin:0;height:100vh;overflow:visible!important;
+  background:#0c0e15;font-family:'Segoe UI',sans-serif;
+  color:#fff;display:flex
+}
 #app{display:flex;width:100%;height:100%}
-.sidebar{flex-shrink:0;width:240px;background:rgba(20,25,40,.96);backdrop-filter:blur(12px);border-right:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;padding:1.5rem 1rem;z-index:10}
-.sidebar-header{text-align:center;margin-bottom:1.2rem}.logo{width:70px;border-radius:10px}
+.sidebar{
+  flex-shrink:0;width:240px;background:rgba(20,25,40,.96);
+  backdrop-filter:blur(12px);border-right:1px solid rgba(255,255,255,.05);
+  display:flex;flex-direction:column;align-items:center;
+  padding:1.5rem 1rem;z-index:10
+}
+.sidebar-header{text-align:center;margin-bottom:1.2rem}
+.logo{width:70px;border-radius:10px}
 .sidebar h2{margin:.5rem 0 0;color:#1e90ff}.version{font-size:.8rem;color:#888}
 .menu{width:100%;margin-top:1rem}
-.menu-item{width:100%;padding:.8rem;border:none;text-align:left;background:transparent;color:#ccc;border-radius:6px;cursor:pointer}
+.menu-item{
+  width:100%;padding:.8rem;border:none;text-align:left;
+  background:transparent;color:#ccc;border-radius:6px;cursor:pointer
+}
 .menu-item:hover,.menu-item.active{background-color:#1e90ff33;color:#fff}
-.pilot-card{margin-top:auto;text-align:center;background:rgba(30,35,55,.5);padding:.8rem;border-radius:10px;width:100%;margin-bottom:1rem}
+.pilot-card{
+  margin-top:auto;text-align:center;background:rgba(30,35,55,.5);
+  padding:.8rem;border-radius:10px;width:100%;margin-bottom:1rem
+}
 .status.online{color:#00ff6a}
-.logout{padding:.7rem;width:100%;background-color:#ff4d4d33;color:#ff4d4d;border:none;border-radius:6px;cursor:pointer;font-weight:600}
+.logout{
+  padding:.7rem;width:100%;background-color:#ff4d4d33;color:#ff4d4d;
+  border:none;border-radius:6px;cursor:pointer;font-weight:600
+}
 .logout:hover{background-color:#ff4d4d55}
-.main-content{flex:1;display:flex;flex-direction:column;background:#0c0e15;overflow:hidden}
-.section{flex:1;display:none;width:100%;height:100%;justify-content:center;align-items:center}
+.main-content{
+  flex:1;display:flex;flex-direction:column;background:#0c0e15;
+  overflow:visible!important
+}
+.section{
+  flex:1;display:none;width:100%;height:100%;
+  justify-content:center;align-items:center
+}
 .section.active{display:flex}
-.dashboard{position:relative;width:100%;height:100%}
-#map{width:100%;height:100%;border-radius:10px;z-index:0!important}
-.info-pilote,.log-overlay{position:absolute;background:rgba(20,25,40,.9);padding:1rem;border-radius:10px;z-index:9999;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+.dashboard{position:relative;width:100%;height:100%;overflow:visible!important}
+#map{width:100%;height:100%;border-radius:10px;z-index:1!important;position:relative}
+.info-pilote,.log-overlay{
+  position:absolute;background:rgba(20,25,40,.9);padding:1rem;border-radius:10px;
+  z-index:9999;box-shadow:0 2px 10px rgba(0,0,0,.4)
+}
 .info-pilote{top:15px;left:15px;width:250px}
 .log-overlay{bottom:15px;right:15px;width:340px;height:160px;overflow-y:auto}
 .info-pilote h3,.log-overlay h3{margin:0 0 8px;color:#1e90ff}
 .info-pilote ul{list-style:none;margin:0;padding:0;font-size:14px}
 .info-pilote li{margin:4px 0;color:#b5c6ff}.info-pilote strong{color:#1e90ff}
-#hud{position:absolute;bottom:0;left:0;right:0;height:45px;background:rgba(0,0,0,.6);border-top:1px solid rgba(255,255,255,.1);display:flex;justify-content:center;align-items:center;gap:2rem;color:#1e90ff;font-weight:600;z-index:9999!important}
-.chat-container{background:rgba(20,25,40,.7);border-radius:10px;display:flex;flex-direction:column;height:75vh;padding:1rem}
-.chat-messages{flex:1;overflow-y:auto;border:1px solid rgba(255,255,255,.05);padding:.8rem;border-radius:10px;background:rgba(10,15,25,.5)}
-.chat.user{background:rgba(30,144,255,.15);margin:.4rem 0;padding:.4rem .6rem;border-radius:6px}
-.chat.admin{background:rgba(255,255,255,.1);color:#ffdc73;margin:.4rem 0;padding:.4rem .6rem;border-radius:6px}
+#hud{
+  position:absolute;bottom:0;left:0;right:0;height:45px;background:rgba(0,0,0,.6);
+  border-top:1px solid rgba(255,255,255,.1);display:flex;justify-content:center;
+  align-items:center;gap:2rem;color:#1e90ff;font-weight:600;z-index:9999!important
+}
+.chat-container{
+  background:rgba(20,25,40,.7);border-radius:10px;display:flex;
+  flex-direction:column;height:75vh;padding:1rem
+}
+.chat-messages{
+  flex:1;overflow-y:auto;border:1px solid rgba(255,255,255,.05);
+  padding:.8rem;border-radius:10px;background:rgba(10,15,25,.5)
+}
+.chat.user{
+  background:rgba(30,144,255,.15);margin:.4rem 0;padding:.4rem .6rem;border-radius:6px
+}
+.chat.admin{
+  background:rgba(255,255,255,.1);color:#ffdc73;margin:.4rem 0;padding:.4rem .6rem;
+  border-radius:6px
+}
 .chat-input{display:flex;gap:.5rem;margin-top:.8rem}
-.chat-input input{flex:1;border:none;border-radius:8px;padding:.7rem;background:rgba(255,255,255,.08);color:#fff;outline:none}
-.chat-input button{background:#1e90ff;color:#fff;border:none;border-radius:8px;padding:.7rem 1rem;font-weight:600;cursor:pointer}
+.chat-input input{
+  flex:1;border:none;border-radius:8px;padding:.7rem;background:rgba(255,255,255,.08);
+  color:#fff;outline:none
+}
+.chat-input button{
+  background:#1e90ff;color:#fff;border:none;border-radius:8px;padding:.7rem 1rem;
+  font-weight:600;cursor:pointer
+}
 .chat-input button:hover{background:#007bff}
 ::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:#1e90ff88;border-radius:4px}
-.update-banner{position:fixed;top:0;left:0;right:0;height:50px;background:linear-gradient(90deg,#007bff,#1e90ff);display:flex;justify-content:center;align-items:center;color:#fff;font-weight:600;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,.3);transform:translateY(-100%);transition:transform .5s ease}
+.update-banner{
+  position:fixed;top:0;left:0;right:0;height:50px;
+  background:linear-gradient(90deg,#007bff,#1e90ff);
+  display:flex;justify-content:center;align-items:center;color:#fff;font-weight:600;
+  z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,.3);
+  transform:translateY(-100%);transition:transform .5s ease
+}
 .update-banner.show{transform:translateY(0)}
 .update-content{display:flex;align-items:center;gap:15px}
-.update-banner button{background:#fff;color:#007bff;border:none;border-radius:6px;padding:6px 12px;font-weight:600;cursor:pointer;transition:background .3s}
+.update-banner button{
+  background:#fff;color:#007bff;border:none;border-radius:6px;padding:6px 12px;
+  font-weight:600;cursor:pointer;transition:background .3s
+}
 .update-banner button:hover{background:#e6e6e6}.hidden{display:none}
-.overlay-toggle{position:absolute;top:15px;right:15px;z-index:9999;background:#1e90ff;color:#fff;border:none;border-radius:8px;padding:.6rem 1rem;font-weight:600;cursor:pointer}
-.overlay-hidden .info-pilote,
-.overlay-hidden .log-overlay,
-.overlay-hidden #hud { display: none !important; }
-
-/* 🗺️ Carte visible et interactive */
-.leaflet-container, .leaflet-map-pane {
-  z-index: 1 !important;
-  position: relative;
+.overlay-toggle{
+  position:absolute;top:15px;right:15px;z-index:9999;background:#1e90ff;color:#fff;
+  border:none;border-radius:8px;padding:.6rem 1rem;font-weight:600;cursor:pointer
 }
-
-/* ✈️ Overlays (HUD, logs, infos) toujours devant */
-#hud,
-.info-pilote,
-.log-overlay,
-#update-banner,
-.overlay-toggle,
-.swal2-container,
-.swal2-popup,
-.swal2-overlay {
-  position: relative;
-  z-index: 9999 !important;
-  pointer-events: auto !important;
-}
-
-/* ✅ Autorise la carte à s'afficher dans son conteneur */
-.main-content, .dashboard, .section.active {
-  overflow: visible !important;
+.overlay-hidden .info-pilote,.overlay-hidden .log-overlay,.overlay-hidden #hud{display:none!important}
+.leaflet-container,.leaflet-map-pane{z-index:1!important;position:relative}
+#hud,.info-pilote,.log-overlay,#update-banner,.overlay-toggle,.swal2-container,.swal2-popup,.swal2-overlay{
+  position:relative;z-index:9999!important;pointer-events:auto!important
 }
