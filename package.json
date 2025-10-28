@@ -1,6 +1,6 @@
 {
   "name": "acars-aircorsica",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "ACARS Air Corsica Virtuel pour MSFS / X-Plane",
   "main": "main.js",
   "author": "Air Corsica Virtuel",
@@ -32,7 +32,7 @@
   },
 
   "build": {
-    "appId": "com.aircorsica.acars",
+    "appId": "fr.aircorsica.acars",
     "productName": "ACARS Air Corsica Virtuel",
     "copyright": "© 2025 Air Corsica Virtuel",
 
