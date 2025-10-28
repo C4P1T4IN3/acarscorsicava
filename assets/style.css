@@ -37,5 +37,31 @@ body,html{margin:0;height:100vh;overflow:hidden;background:#0c0e15;font-family:'
 .update-banner button{background:#fff;color:#007bff;border:none;border-radius:6px;padding:6px 12px;font-weight:600;cursor:pointer;transition:background .3s}
 .update-banner button:hover{background:#e6e6e6}.hidden{display:none}
 .overlay-toggle{position:absolute;top:15px;right:15px;z-index:9999;background:#1e90ff;color:#fff;border:none;border-radius:8px;padding:.6rem 1rem;font-weight:600;cursor:pointer}
-.overlay-hidden .info-pilote,.overlay-hidden .log-overlay,.overlay-hidden #hud{display:none!important}
-.swal2-container,.swal2-popup,.swal2-overlay{z-index:10000!important;pointer-events:auto!important}
+.overlay-hidden .info-pilote,
+.overlay-hidden .log-overlay,
+.overlay-hidden #hud { display: none !important; }
+
+/* 🗺️ Carte visible et interactive */
+.leaflet-container, .leaflet-map-pane {
+  z-index: 1 !important;
+  position: relative;
+}
+
+/* ✈️ Overlays (HUD, logs, infos) toujours devant */
+#hud,
+.info-pilote,
+.log-overlay,
+#update-banner,
+.overlay-toggle,
+.swal2-container,
+.swal2-popup,
+.swal2-overlay {
+  position: relative;
+  z-index: 9999 !important;
+  pointer-events: auto !important;
+}
+
+/* ✅ Autorise la carte à s'afficher dans son conteneur */
+.main-content, .dashboard, .section.active {
+  overflow: visible !important;
+}
