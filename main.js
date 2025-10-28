@@ -147,6 +147,7 @@ function checkForUpdates() {
   }
 }
 
+
 // =============================
 // 🧩 IPC : gestion des actions depuis renderer
 // =============================
