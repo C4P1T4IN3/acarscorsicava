@@ -11,12 +11,15 @@ const bridge = require("./modules/bridge.js");
 const auth = require("./modules/auth.js");
 const log = require("electron-log");
 
+// =============================
+// Initialisation du logger
+// =============================
 log.initialize({ preload: true });
 log.transports.file.level = "info";
 log.info("🛫 ACARS Air Corsica — Initialisation du logger");
 
 // =============================
-// Chargement sécurisé du module electron-updater
+// Chargement du module electron-updater
 // =============================
 let autoUpdater;
 try {
@@ -93,23 +96,15 @@ function checkForUpdates() {
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
     autoUpdater.allowPrerelease = false;
-	autoUpdater.disableWebInstaller = true;
-autoUpdater.forceDevUpdateConfig = true;
-autoUpdater.allowDowngrade = true;
+    autoUpdater.disableWebInstaller = true;
+    autoUpdater.forceDevUpdateConfig = true;
+    autoUpdater.allowDowngrade = true;
 
-    autoUpdater.checkForUpdatesAndNotify(); // ✅ Version complète
-	
-	autoUpdater.on("checking-for-update", () => log.info("🛰️ Recherche de mise à jour..."));
+    autoUpdater.checkForUpdatesAndNotify();
+
+    // --- Événements ---
+    autoUpdater.on("checking-for-update", () => log.info("🛰️ Recherche de mise à jour..."));
     autoUpdater.on("update-not-available", () => log.info("ℹ️ Aucune mise à jour disponible."));
-    autoUpdater.on("update-available", (info) => log.info(`📦 Mise à jour trouvée: v${info.version}`));
-    autoUpdater.on("error", (err) => log.error("❌ Erreur AutoUpdater:", err.message));
-
-  } catch (error) {
-    log.error("Erreur checkForUpdates:", error);
-  }
-}
-
-    // 📦 Nouvelle mise à jour trouvée
     autoUpdater.on("update-available", (info) => {
       log.info(`📦 Nouvelle version ${info.version} trouvée`);
       if (mainWindow) {
@@ -119,11 +114,9 @@ autoUpdater.allowDowngrade = true;
         });
       }
     });
-
-    // 📥 Progression du téléchargement
     autoUpdater.on("download-progress", (progress) => {
       const percent = Math.round(progress.percent);
-      log.info(`⬇️ Progression téléchargement: ${percent}%`);
+      log.info(`⬇️ Téléchargement en cours : ${percent}%`);
       if (mainWindow) {
         mainWindow.webContents.send("bridge-data", {
           type: "update-progress",
@@ -131,10 +124,8 @@ autoUpdater.allowDowngrade = true;
         });
       }
     });
-
-    // ✅ Téléchargée et prête à installer
     autoUpdater.on("update-downloaded", (info) => {
-      log.info(`✅ Mise à jour ${info.version} prête à installer`);
+      log.info(`✅ Mise à jour ${info.version} téléchargée`);
       if (mainWindow) {
         mainWindow.webContents.send("bridge-data", {
           type: "update-downloaded",
@@ -142,8 +133,6 @@ autoUpdater.allowDowngrade = true;
         });
       }
     });
-
-    // ❌ Erreur
     autoUpdater.on("error", (err) => {
       log.error("❌ Erreur AutoUpdater :", err.message);
       if (mainWindow) {
