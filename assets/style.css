@@ -286,3 +286,26 @@ body {
 .overlay-hidden .info-pilote,
 .overlay-hidden .log-overlay,
 .overlay-hidden #hud { display:none !important; }
+
+/* La carte ne doit jamais dépasser les éléments d’interface */
+.leaflet-container {
+  z-index: 0 !important;
+}
+
+/* Le HUD, logs, et statistiques doivent toujours être au-dessus */
+#hud,
+#flightLog,
+#toggleHud,
+.dashboard,
+#stat-panel,
+#update-banner {
+  position: relative;
+  z-index: 9999 !important;
+}
+
+/* Si tu as un overlay global ou un conteneur principal */
+body,
+html {
+  overflow: hidden;
+  background: #1b1d23;
+}

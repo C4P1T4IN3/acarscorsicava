@@ -1,5 +1,5 @@
 // ==============================
-// ACARS Air Corsica Virtuel — Renderer complet (version stable)
+// ACARS Air Corsica Virtuel — Renderer complet (version stable corrigée)
 // ==============================
 
 const API_BASE = "https://crew.aircorsica-virtuel.fr/api_proxy.php?endpoint";
@@ -43,7 +43,7 @@ let apiKey = localStorage.getItem("apiKey") || null;
 let currentUser = null;
 let currentFlight = null;
 
-let map, aircraftMarker, flightPath;
+let map, aircraftMarker = null, flightPath;
 let pathCoords = [];
 let otherAircraftMarkers = {};
 
@@ -83,29 +83,34 @@ if (logoutBtn) {
 function initMap() {
   if (typeof L === "undefined") return console.error("Leaflet non chargé");
 
-  map = L.map("map", { center: [42.5, 9.0], zoom: 6, zoomControl: true });
+  map = L.map("map", { center: [42.5, 9.0], zoom: 7, zoomControl: true });
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors",
     maxZoom: 18,
   }).addTo(map);
 
-const myPlaneIcon = L.icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/31/31069.png",
-  iconSize: [42, 42],
-  iconAnchor: [21, 21],
-});
-
-// Autres avions (même icône, plus petite)
-const otherPlaneIcon = L.icon({
-  iconUrl: "https://cdn-icons-png.flaticon.com/512/31/31069.png",
-  iconSize: [28, 28],
-  iconAnchor: [14, 14],
-});
-
-  aircraftMarker = L.marker([42.5, 9.0], { icon: myPlaneIcon }).addTo(map);
-
   flightPath = L.polyline([], { color: "#1E90FF", weight: 3, opacity: 0.8 }).addTo(map);
+
+  // Bouton pour afficher/masquer HUD
+  const btn = document.createElement("button");
+  btn.id = "toggleHud";
+  btn.textContent = "🧭 HUD";
+  btn.style.position = "absolute";
+  btn.style.top = "15px";
+  btn.style.right = "15px";
+  btn.style.background = "rgba(30,144,255,0.25)";
+  btn.style.color = "#fff";
+  btn.style.border = "none";
+  btn.style.padding = "6px 10px";
+  btn.style.borderRadius = "6px";
+  btn.style.cursor = "pointer";
+  btn.style.zIndex = 1000;
+  btn.addEventListener("click", () => {
+    const hudEl = document.getElementById("hud");
+    hudEl.style.display = hudEl.style.display === "none" ? "flex" : "none";
+  });
+  document.body.appendChild(btn);
 }
 
 const overlayToggle = document.getElementById("overlayToggle");
@@ -180,13 +185,23 @@ function onSimData(d) {
   const phase = d.phase ?? "—";
   const fuel = d.fuel ?? null;
 
+  // Créer l’avion seulement quand on a des coordonnées valides
   if (map && lat && lon) {
-    const pos = [lat, lon];
-    aircraftMarker.setLatLng(pos);
-    if (aircraftMarker.setRotationAngle) aircraftMarker.setRotationAngle(heading);
-    pathCoords.push(pos);
+    if (!aircraftMarker) {
+      const myPlaneIcon = L.icon({
+        iconUrl: "https://cdn-icons-png.flaticon.com/512/31/31069.png",
+        iconSize: [42, 42],
+        iconAnchor: [21, 21],
+      });
+      aircraftMarker = L.marker([lat, lon], { icon: myPlaneIcon }).addTo(map);
+      map.setView([lat, lon], 8);
+    } else {
+      aircraftMarker.setLatLng([lat, lon]);
+      if (aircraftMarker.setRotationAngle) aircraftMarker.setRotationAngle(heading);
+    }
+
+    pathCoords.push([lat, lon]);
     flightPath.setLatLngs(pathCoords);
-    if (pathCoords.length === 1) map.setView(pos, 8);
   }
 
   if (lastPosition && lat && lon) totalDistance += haversineNM(lastPosition, { lat, lon });
@@ -218,38 +233,41 @@ async function updateOtherAircraft() {
     const res = await axios.get("https://crew.aircorsica-virtuel.fr/api/acars");
     const flights = res.data?.data || [];
 
-    Object.values(otherAircraftMarkers).forEach((m) => map.removeLayer(m));
-    otherAircraftMarkers = {};
-
     const otherPlaneIcon = L.icon({
-      iconUrl: "https://cdn-icons-png.flaticon.com/512/1039/1039716.png",
+      iconUrl: "https://cdn-icons-png.flaticon.com/512/31/31069.png",
       iconSize: [30, 30],
       iconAnchor: [15, 15],
     });
+
+    const activeIds = new Set();
 
     flights.forEach((f) => {
       const lat = f?.position?.lat ?? f?.latitude;
       const lon = f?.position?.lon ?? f?.longitude;
       if (!lat || !lon) return;
 
-      const hdg = f?.position?.heading || 0;
-      const pilot = f?.user?.name_private || "Pilote";
-      const callsign = f?.flight?.flight_number || "N/A";
-      const dep = f?.flight?.dpt_airport_id || "--";
-      const arr = f?.flight?.arr_airport_id || "--";
-      const alt = f?.position?.altitude ? `${f.position.altitude} ft` : "—";
-      const spd = f?.position?.groundspeed ? `${f.position.groundspeed} kts` : "—";
-      const aircraft = f?.aircraft?.name || "—";
+      const id = f?.user?.id || f?.user?.name_private;
+      activeIds.add(id);
 
-      const marker = L.marker([lat, lon], { icon: otherPlaneIcon }).addTo(map);
-      if (marker.setRotationAngle) marker.setRotationAngle(hdg);
-
-      marker.bindTooltip(
-        `<b>${pilot}</b><br>✈️ ${callsign} (${aircraft})<br>📍 ${dep} → ${arr}<br>⬆️ ${alt} | 💨 ${spd} | 🧭 ${hdg}°`,
-        { direction: "top" }
-      );
-      otherAircraftMarkers[pilot] = marker;
+      if (!otherAircraftMarkers[id]) {
+        const marker = L.marker([lat, lon], { icon: otherPlaneIcon }).addTo(map);
+        marker.bindTooltip(
+          `<b>${f?.user?.name_private || "Pilote"}</b><br>✈️ ${f?.flight?.flight_number || "N/A"}<br>📍 ${f?.flight?.dpt_airport_id || "--"} → ${f?.flight?.arr_airport_id || "--"}<br>⬆️ ${f?.position?.altitude || "—"} ft | 💨 ${f?.position?.groundspeed || "—"} kts`,
+          { direction: "top" }
+        );
+        otherAircraftMarkers[id] = marker;
+      } else {
+        otherAircraftMarkers[id].setLatLng([lat, lon]);
+      }
     });
+
+    // Supprimer les marqueurs inactifs
+    for (const id in otherAircraftMarkers) {
+      if (!activeIds.has(id)) {
+        map.removeLayer(otherAircraftMarkers[id]);
+        delete otherAircraftMarkers[id];
+      }
+    }
   } catch {
     addLog("⚠️ Erreur chargement ACARS autres avions");
   }
@@ -366,7 +384,7 @@ function fmtTime(sec) {
 }
 
 // =============================
-// ⚙️ GESTION MISE À JOUR (autoUpdater)
+// ⚙️ GESTION MISE À JOUR
 // =============================
 if (window.electronAPI) {
   window.electronAPI.onBridgeData((data) => {
@@ -424,45 +442,3 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
-
-// =============================
-// 🔔 GESTION MISE À JOUR VISUELLE
-// =============================
-const banner = document.getElementById("update-banner");
-const updateBtn = document.getElementById("update-now-btn");
-
-if (window.electronAPI) {
-  window.electronAPI.onBridgeData((data) => {
-    if (data.type === "update-available") {
-      console.log(`🚀 Nouvelle version ${data.version} détectée`);
-      banner.classList.remove("hidden");
-      setTimeout(() => banner.classList.add("show"), 200);
-    }
-
-    if (data.type === "update-downloaded") {
-      Swal.fire({
-        title: "Mise à jour prête",
-        text: "Redémarrer maintenant pour installer la mise à jour ?",
-        icon: "success",
-        showCancelButton: true,
-        confirmButtonText: "Redémarrer",
-      }).then((r) => {
-        if (r.isConfirmed) window.electronAPI.installUpdate();
-      });
-    }
-  });
-
-  if (updateBtn) {
-    updateBtn.addEventListener("click", () => {
-      Swal.fire({
-        title: "Téléchargement en cours...",
-        text: "Veuillez patienter pendant la mise à jour.",
-        icon: "info",
-        showConfirmButton: false,
-        allowOutsideClick: false,
-      });
-      window.electronAPI.downloadUpdate();
-    });
-  }
-}
-
