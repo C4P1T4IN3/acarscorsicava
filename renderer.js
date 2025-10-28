@@ -246,23 +246,18 @@ function onSimData(d) {
 }
 
 // =============================
-// 🌍 AUTRES AVIONS (ACARS)
+// 🌍 AUTRES AVIONS (ACARS) — Version adaptée à ton JSON phpVMS
 // =============================
 async function updateOtherAircraft() {
   if (!map) return;
+
   try {
     const res = await axios.get("https://crew.aircorsica-virtuel.fr/api/acars");
+    const flights = res.data?.data || [];
 
-    // ✅ Supporte tous les formats phpVMS 7
-    const flights =
-      res.data?.data ||
-      res.data?.flights ||
-      res.data?.acars ||
-      res.data ||
-      [];
-
-    if (!Array.isArray(flights) || !flights.length) {
-      addLog("ℹ️ Aucun avion ACARS détecté pour l’instant.");
+    if (!Array.isArray(flights) || flights.length === 0) {
+      addLog("ℹ️ Aucun avion ACARS détecté.");
+      console.log("Aucun vol en cours détecté via /api/acars");
       return;
     }
 
@@ -275,35 +270,27 @@ async function updateOtherAircraft() {
     const activeIds = new Set();
 
     flights.forEach((f) => {
-      const lat =
-        f?.position?.lat ??
-        f?.latitude ??
-        f?.lat ??
-        f?.last_position?.lat ??
-        null;
-      const lon =
-        f?.position?.lon ??
-        f?.longitude ??
-        f?.lon ??
-        f?.last_position?.lon ??
-        null;
-
+      const pos = f.position || {};
+      const lat = pos.lat;
+      const lon = pos.lon;
       if (!lat || !lon) return;
 
-      const id = f?.user?.id || f?.user_id || f?.user?.name_private || Math.random();
+      const id = f.id || f.user?.id || Math.random();
       activeIds.add(id);
 
-      const pilotName = f?.user?.name_private || f?.user?.name || "Pilote";
-      const flightNum = f?.flight?.flight_number || f?.flight_number || "N/A";
-      const dep = f?.flight?.dpt_airport_id || f?.depicao || "--";
-      const arr = f?.flight?.arr_airport_id || f?.arricao || "--";
-      const alt = f?.position?.altitude || f?.altitude || "—";
-      const gs = f?.position?.groundspeed || f?.groundspeed || "—";
+      const pilot = f.user?.name_private || f.user?.name || "Pilote";
+      const flightNum = f.flight_number || "N/A";
+      const dep = f.dpt_airport_id || "--";
+      const arr = f.arr_airport_id || "--";
+      const alt = pos.altitude ? `${pos.altitude.toFixed(0)} ft` : "—";
+      const gs = pos.gs ? `${pos.gs.toFixed(0)} kts` : "—";
+      const phase = f.phase || f.status_text || "—";
 
+      // Crée le marqueur si nouveau
       if (!otherAircraftMarkers[id]) {
         const marker = L.marker([lat, lon], { icon: otherPlaneIcon }).addTo(map);
         marker.bindTooltip(
-          `<b>${pilotName}</b><br>✈️ ${flightNum}<br>📍 ${dep} → ${arr}<br>⬆️ ${alt} ft | 💨 ${gs} kts`,
+          `<b>${pilot}</b><br>✈️ ${flightNum} (${dep} → ${arr})<br>⬆️ ${alt} | 💨 ${gs}<br>🛰️ ${phase}`,
           { direction: "top" }
         );
         otherAircraftMarkers[id] = marker;
@@ -312,7 +299,7 @@ async function updateOtherAircraft() {
       }
     });
 
-    // Supprime les avions inactifs
+    // Supprime les marqueurs des avions qui ne sont plus actifs
     for (const id in otherAircraftMarkers) {
       if (!activeIds.has(id)) {
         map.removeLayer(otherAircraftMarkers[id]);
@@ -320,12 +307,13 @@ async function updateOtherAircraft() {
       }
     }
 
-    console.log(`✅ ${Object.keys(otherAircraftMarkers).length} avions affichés.`);
+    console.log(`✅ ${Object.keys(otherAircraftMarkers).length} avions affichés sur la carte.`);
   } catch (err) {
-    addLog("⚠️ Erreur chargement ACARS autres avions");
-    console.error(err);
+    addLog("⚠️ Erreur lors du chargement ACARS");
+    console.error("Erreur ACARS:", err);
   }
 }
+
 
 // =============================
 // 💬 CHAT PILOTE
