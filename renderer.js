@@ -90,15 +90,29 @@ function initMap() {
     maxZoom: 18,
   }).addTo(map);
 
-  const myPlaneIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/162/162740.png",
-    iconSize: [42, 42],
-    iconAnchor: [21, 21],
-  });
+const myPlaneIcon = L.icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/31/31069.png",
+  iconSize: [42, 42],
+  iconAnchor: [21, 21],
+});
+
+// Autres avions (même icône, plus petite)
+const otherPlaneIcon = L.icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/31/31069.png",
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+});
 
   aircraftMarker = L.marker([42.5, 9.0], { icon: myPlaneIcon }).addTo(map);
 
   flightPath = L.polyline([], { color: "#1E90FF", weight: 3, opacity: 0.8 }).addTo(map);
+}
+
+const overlayToggle = document.getElementById("overlayToggle");
+if (overlayToggle) {
+  overlayToggle.addEventListener("click", () => {
+    document.querySelector(".dashboard").classList.toggle("overlay-hidden");
+  });
 }
 
 // =============================

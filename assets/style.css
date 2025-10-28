@@ -277,3 +277,12 @@ body {
 .hidden {
   display: none;
 }
+
+.overlay-toggle{
+  position:absolute; top:15px; right:15px; z-index:1000;
+  background:#1e90ff; color:#fff; border:none; border-radius:8px;
+  padding:.6rem 1rem; font-weight:600; cursor:pointer;
+}
+.overlay-hidden .info-pilote,
+.overlay-hidden .log-overlay,
+.overlay-hidden #hud { display:none !important; }
