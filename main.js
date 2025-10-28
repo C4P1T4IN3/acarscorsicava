@@ -93,8 +93,21 @@ function checkForUpdates() {
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
     autoUpdater.allowPrerelease = false;
+	autoUpdater.disableWebInstaller = true;
+autoUpdater.forceDevUpdateConfig = true;
+autoUpdater.allowDowngrade = true;
 
     autoUpdater.checkForUpdatesAndNotify(); // ✅ Version complète
+	
+	autoUpdater.on("checking-for-update", () => log.info("🛰️ Recherche de mise à jour..."));
+    autoUpdater.on("update-not-available", () => log.info("ℹ️ Aucune mise à jour disponible."));
+    autoUpdater.on("update-available", (info) => log.info(`📦 Mise à jour trouvée: v${info.version}`));
+    autoUpdater.on("error", (err) => log.error("❌ Erreur AutoUpdater:", err.message));
+
+  } catch (error) {
+    log.error("Erreur checkForUpdates:", error);
+  }
+}
 
     // 📦 Nouvelle mise à jour trouvée
     autoUpdater.on("update-available", (info) => {
