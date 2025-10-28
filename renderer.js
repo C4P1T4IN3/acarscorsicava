@@ -256,16 +256,9 @@ async function updateOtherAircraft() {
     const flights = res.data?.data || [];
 
     if (!Array.isArray(flights) || flights.length === 0) {
-      addLog("ℹ️ Aucun avion ACARS détecté.");
-      console.log("Aucun vol en cours détecté via /api/acars");
+      console.log("ℹ️ Aucun avion ACARS détecté.");
       return;
     }
-
-    const otherPlaneIcon = L.icon({
-      iconUrl: "https://cdn-icons-png.flaticon.com/512/31/31069.png",
-      iconSize: [30, 30],
-      iconAnchor: [15, 15],
-    });
 
     const activeIds = new Set();
 
@@ -275,7 +268,7 @@ async function updateOtherAircraft() {
       const lon = pos.lon;
       if (!lat || !lon) return;
 
-      const id = f.id || f.user?.id || Math.random();
+      const id = f.id || f.user?.id || f.user_id || Math.random();
       activeIds.add(id);
 
       const pilot = f.user?.name_private || f.user?.name || "Pilote";
@@ -285,21 +278,48 @@ async function updateOtherAircraft() {
       const alt = pos.altitude ? `${pos.altitude.toFixed(0)} ft` : "—";
       const gs = pos.gs ? `${pos.gs.toFixed(0)} kts` : "—";
       const phase = f.phase || f.status_text || "—";
+      const heading = pos.heading || 0;
 
-      // Crée le marqueur si nouveau
+      // 🎨 Couleur selon phase du vol
+      let iconColor = "#1e90ff"; // par défaut : bleu (Enroute)
+      if (phase.includes("ICL")) iconColor = "#ffaa00"; // jaune = montée
+      else if (phase.includes("APP") || phase.includes("LND")) iconColor = "#00ff6a"; // vert = approche/atterrissage
+      else if (phase.includes("GND") || phase.includes("PARK")) iconColor = "#888"; // gris = sol
+
+      // 🛫 Génère une icône colorée orientable
+      const planeSVG = `
+        <svg width="36" height="36" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <path fill="${iconColor}" d="M256 0c-14.1 0-25.6 11.5-25.6 25.6v166.4L25.6 281.6c-8.5 3.4-12.8 11.5-12.8 20.5s4.3 17.1 12.8 20.5L230.4 320v166.4c0 14.1 11.5 25.6 25.6 25.6s25.6-11.5 25.6-25.6V320l204.8 2.6c8.5-3.4 12.8-11.5 12.8-20.5s-4.3-17.1-12.8-20.5L281.6 192V25.6C281.6 11.5 270.1 0 256 0z"/>
+        </svg>`;
+      const dataUrl = `data:image/svg+xml;base64,${btoa(planeSVG)}`;
+      const icon = L.icon({
+        iconUrl: dataUrl,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+
+      // 🗺️ Création ou mise à jour du marqueur
       if (!otherAircraftMarkers[id]) {
-        const marker = L.marker([lat, lon], { icon: otherPlaneIcon }).addTo(map);
+        const marker = L.marker([lat, lon], {
+          icon,
+          rotationAngle: heading,
+          rotationOrigin: "center center",
+        }).addTo(map);
+
         marker.bindTooltip(
           `<b>${pilot}</b><br>✈️ ${flightNum} (${dep} → ${arr})<br>⬆️ ${alt} | 💨 ${gs}<br>🛰️ ${phase}`,
           { direction: "top" }
         );
+
         otherAircraftMarkers[id] = marker;
       } else {
-        otherAircraftMarkers[id].setLatLng([lat, lon]);
+        const marker = otherAircraftMarkers[id];
+        marker.setLatLng([lat, lon]);
+        if (marker.setRotationAngle) marker.setRotationAngle(heading);
       }
     });
 
-    // Supprime les marqueurs des avions qui ne sont plus actifs
+    // 🧹 Supprimer les anciens marqueurs
     for (const id in otherAircraftMarkers) {
       if (!activeIds.has(id)) {
         map.removeLayer(otherAircraftMarkers[id]);
@@ -307,13 +327,12 @@ async function updateOtherAircraft() {
       }
     }
 
-    console.log(`✅ ${Object.keys(otherAircraftMarkers).length} avions affichés sur la carte.`);
+    console.log(`✅ ${Object.keys(otherAircraftMarkers).length} avions affichés et mis à jour.`);
   } catch (err) {
+    console.error("⚠️ Erreur chargement ACARS :", err);
     addLog("⚠️ Erreur lors du chargement ACARS");
-    console.error("Erreur ACARS:", err);
   }
 }
-
 
 // =============================
 // 💬 CHAT PILOTE
@@ -467,8 +486,7 @@ if (window.electronAPI) {
 window.addEventListener("DOMContentLoaded", () => {
   initMap();
   startBridge();
-  setInterval(updateOtherAircraft, 15000);
-  setTimeout(updateOtherAircraft, 2000);
+  setInterval(updateOtherAircraft, 7000);
 
   if (apiKey) {
     verifyApiKey(apiKey);
