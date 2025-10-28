@@ -252,7 +252,19 @@ async function updateOtherAircraft() {
   if (!map) return;
   try {
     const res = await axios.get("https://crew.aircorsica-virtuel.fr/api/acars");
-    const flights = res.data?.data || [];
+
+    // ✅ Supporte tous les formats phpVMS 7
+    const flights =
+      res.data?.data ||
+      res.data?.flights ||
+      res.data?.acars ||
+      res.data ||
+      [];
+
+    if (!Array.isArray(flights) || !flights.length) {
+      addLog("ℹ️ Aucun avion ACARS détecté pour l’instant.");
+      return;
+    }
 
     const otherPlaneIcon = L.icon({
       iconUrl: "https://cdn-icons-png.flaticon.com/512/31/31069.png",
@@ -263,17 +275,35 @@ async function updateOtherAircraft() {
     const activeIds = new Set();
 
     flights.forEach((f) => {
-      const lat = f?.position?.lat ?? f?.latitude;
-      const lon = f?.position?.lon ?? f?.longitude;
+      const lat =
+        f?.position?.lat ??
+        f?.latitude ??
+        f?.lat ??
+        f?.last_position?.lat ??
+        null;
+      const lon =
+        f?.position?.lon ??
+        f?.longitude ??
+        f?.lon ??
+        f?.last_position?.lon ??
+        null;
+
       if (!lat || !lon) return;
 
-      const id = f?.user?.id || f?.user?.name_private;
+      const id = f?.user?.id || f?.user_id || f?.user?.name_private || Math.random();
       activeIds.add(id);
+
+      const pilotName = f?.user?.name_private || f?.user?.name || "Pilote";
+      const flightNum = f?.flight?.flight_number || f?.flight_number || "N/A";
+      const dep = f?.flight?.dpt_airport_id || f?.depicao || "--";
+      const arr = f?.flight?.arr_airport_id || f?.arricao || "--";
+      const alt = f?.position?.altitude || f?.altitude || "—";
+      const gs = f?.position?.groundspeed || f?.groundspeed || "—";
 
       if (!otherAircraftMarkers[id]) {
         const marker = L.marker([lat, lon], { icon: otherPlaneIcon }).addTo(map);
         marker.bindTooltip(
-          `<b>${f?.user?.name_private || "Pilote"}</b><br>✈️ ${f?.flight?.flight_number || "N/A"}<br>📍 ${f?.flight?.dpt_airport_id || "--"} → ${f?.flight?.arr_airport_id || "--"}<br>⬆️ ${f?.position?.altitude || "—"} ft | 💨 ${f?.position?.groundspeed || "—"} kts`,
+          `<b>${pilotName}</b><br>✈️ ${flightNum}<br>📍 ${dep} → ${arr}<br>⬆️ ${alt} ft | 💨 ${gs} kts`,
           { direction: "top" }
         );
         otherAircraftMarkers[id] = marker;
@@ -282,15 +312,18 @@ async function updateOtherAircraft() {
       }
     });
 
-    // Supprimer les marqueurs inactifs
+    // Supprime les avions inactifs
     for (const id in otherAircraftMarkers) {
       if (!activeIds.has(id)) {
         map.removeLayer(otherAircraftMarkers[id]);
         delete otherAircraftMarkers[id];
       }
     }
-  } catch {
+
+    console.log(`✅ ${Object.keys(otherAircraftMarkers).length} avions affichés.`);
+  } catch (err) {
     addLog("⚠️ Erreur chargement ACARS autres avions");
+    console.error(err);
   }
 }
 
