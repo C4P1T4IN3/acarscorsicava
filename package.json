@@ -80,7 +80,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "ACARS Air Corsica Virtuel",
-      "deleteAppDataOnUninstall": false,
+      "deleteAppDataOnUninstall": false
     }
   }
 }
