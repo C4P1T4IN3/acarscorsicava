@@ -81,38 +81,59 @@ if (logoutBtn) {
 // 🗺️ INITIALISATION CARTE
 // =============================
 function initMap() {
-  if (typeof L === "undefined") return console.error("Leaflet non chargé");
+  if (typeof L === "undefined") return console.error("❌ Leaflet non chargé");
 
-  map = L.map("map", { center: [42.5, 9.0], zoom: 7, zoomControl: true });
+  const mapContainer = document.getElementById("map");
+  if (!mapContainer) {
+    console.error("❌ Élément #map introuvable !");
+    return;
+  }
 
+  // ✅ Initialisation de la carte
+  map = L.map(mapContainer, {
+    center: [42.5, 9.0],
+    zoom: 7,
+    zoomControl: true,
+  });
+
+  // ✅ Couche OpenStreetMap
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors",
     maxZoom: 18,
   }).addTo(map);
 
+  // ✅ Corrige le bug de carte vide au démarrage
+  setTimeout(() => map.invalidateSize(), 300);
+
+  // ✅ Ligne de vol
   flightPath = L.polyline([], { color: "#1E90FF", weight: 3, opacity: 0.8 }).addTo(map);
 
-  // Bouton pour afficher/masquer HUD
+  // ✅ Bouton HUD
   const btn = document.createElement("button");
   btn.id = "toggleHud";
   btn.textContent = "🧭 HUD";
-  btn.style.position = "absolute";
-  btn.style.top = "15px";
-  btn.style.right = "15px";
-  btn.style.background = "rgba(30,144,255,0.25)";
-  btn.style.color = "#fff";
-  btn.style.border = "none";
-  btn.style.padding = "6px 10px";
-  btn.style.borderRadius = "6px";
-  btn.style.cursor = "pointer";
-  btn.style.zIndex = 1000;
+  Object.assign(btn.style, {
+    position: "absolute",
+    top: "15px",
+    right: "15px",
+    background: "rgba(30,144,255,0.25)",
+    color: "#fff",
+    border: "none",
+    padding: "6px 10px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    zIndex: 1000,
+  });
   btn.addEventListener("click", () => {
     const hudEl = document.getElementById("hud");
     hudEl.style.display = hudEl.style.display === "none" ? "flex" : "none";
   });
   document.body.appendChild(btn);
+
+  console.log("✅ Carte Leaflet initialisée !");
 }
 
+// 🧩 Bouton “Afficher/Masquer infos”
 const overlayToggle = document.getElementById("overlayToggle");
 if (overlayToggle) {
   overlayToggle.addEventListener("click", () => {
